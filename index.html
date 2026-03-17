@@ -147,13 +147,52 @@ textarea.input{min-height:80px;resize:none}
 .ds-tab svg{flex-shrink:0;transition:stroke .15s;}
 
 @media(min-width:768px){
-  body{max-width:960px;padding-left:200px;}
-  .screen{padding-bottom:24px;}
+  /* Layout — full width with centered content */
+  body{max-width:100%;padding-left:0;padding-top:64px;}
+  .screen{padding-bottom:40px;max-width:860px;margin:0 auto;width:100%;}
   #bottom-nav{display:none !important;}
-  #desktop-sidebar{display:flex;left:max(0px,calc((100vw - 960px)/2));}
   .modal-sheet{max-width:560px;}
-  .topbar{padding:16px 24px 12px;}
+  .topbar{padding:16px 28px 12px;}
+
+  /* ── Desktop topnav (repurposed sidebar) ── */
+  #desktop-sidebar{
+    display:flex;flex-direction:row;align-items:center;
+    position:fixed;top:0;left:0;right:0;
+    width:100%;max-width:none;height:64px;
+    border-right:none;border-bottom:1px solid var(--border);
+    overflow-y:visible;padding:0 40px;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  }
+  .ds-logo{padding:0;border-bottom:none;margin-right:auto;font-size:20px;letter-spacing:-.6px;}
+  .ds-nav{flex-direction:row;padding:0;gap:4px;align-items:center;}
+  .ds-tab{flex-direction:row;padding:8px 18px;border-radius:9px;font-size:13px;gap:7px;width:auto;letter-spacing:.1px;}
+  .ds-tab:hover{background:var(--bg);}
+  .ds-tab.active{background:var(--text);color:#fff;}
+  .ds-tab.active svg{stroke:#fff !important;}
+  .ds-tab svg{width:16px;height:16px;}
+
+  /* ── Boycott journey — full-screen story ── */
   #boycott-onboarding{left:0;right:0;top:0;bottom:0;transform:none;max-width:100%;width:100%;}
+  .bo-card{padding:80px 60px 100px;align-items:center;}
+  /* Center all direct card children with a max-width */
+  .bo-card>*:not(.bo-card-bg):not(.bo-tap-zone){max-width:700px;width:100%;}
+  /* Bigger headlines */
+  .bo-card-1 .bo-headline{font-size:42px;line-height:1.1;}
+  .bo-card-1 .bo-subline{font-size:17px;max-width:500px;}
+  .bo-card-2 .bo-big-claim{font-size:42px;}
+  .bo-big-claim-3{font-size:38px;}
+  .bo-world-headline{font-size:40px;line-height:1.1;}
+  .bo-pipeline-headline{font-size:36px;}
+  .bo-anguish-q{font-size:52px;max-width:540px;}
+  .bo-anguish-l{font-size:20px;max-width:480px;}
+  /* Fact blocks — 3 columns on desktop */
+  .bo-facts-row{display:flex;flex-direction:row;gap:20px;max-width:860px !important;}
+  .bo-facts-row .bo-fact-block{flex:1;min-width:0;margin-bottom:0;}
+  /* Beat 6 chain — constrained width */
+  .bo-chain{max-width:580px;}
+  /* Beat 7 */
+  .bo-grain-goal{max-width:400px;}
+  .bo-cta-primary{max-width:480px;margin:0 auto 10px;}
 }
 
 </style>
@@ -5930,22 +5969,24 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="bo-beat-label">THIS IS ABOUT YOU</div>
       <div class="bo-big-claim">Your feed was designed<br>to make you anxious.</div>
 
-      <div class="bo-fact-block f1">
-        <div class="bo-fact-number">1 in 3</div>
-        <div class="bo-fact-label">Teenage girls said Instagram made their body image <em>worse</em>. Meta's own researchers found this. Their report was buried.</div>
-        <a class="bo-fact-source" href="https://www.wsj.com/articles/facebook-knows-instagram-is-toxic-for-teen-girls-company-documents-show-11631620739" target="_blank">Wall Street Journal · Sep 2021</a>
-      </div>
+      <div class="bo-facts-row">
+        <div class="bo-fact-block f1">
+          <div class="bo-fact-number">1 in 3</div>
+          <div class="bo-fact-label">Teenage girls said Instagram made their body image <em>worse</em>. Meta's own researchers found this. Their report was buried.</div>
+          <a class="bo-fact-source" href="https://www.wsj.com/articles/facebook-knows-instagram-is-toxic-for-teen-girls-company-documents-show-11631620739" target="_blank">Wall Street Journal · Sep 2021</a>
+        </div>
 
-      <div class="bo-fact-block f2">
-        <div class="bo-fact-number">40 min</div>
-        <div class="bo-fact-label">The average user's daily time on Instagram. Each minute is logged, analysed, and sold as a targeting signal.</div>
-        <a class="bo-fact-source" href="https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00401.htm" target="_blank">Frances Haugen testimony · US Senate, 2021</a>
-      </div>
+        <div class="bo-fact-block f2">
+          <div class="bo-fact-number">40 min</div>
+          <div class="bo-fact-label">The average user's daily time on Instagram. Each minute is logged, analysed, and sold as a targeting signal.</div>
+          <a class="bo-fact-source" href="https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00401.htm" target="_blank">Frances Haugen testimony · US Senate, 2021</a>
+        </div>
 
-      <div class="bo-fact-block f3">
-        <div class="bo-fact-number">6×</div>
-        <div class="bo-fact-label">More reach for content that triggers anger or fear. The algorithm doesn't optimise for truth — it optimises for reaction.</div>
-        <a class="bo-fact-source" href="https://www.science.org/doi/10.1126/science.aap9559" target="_blank">MIT Media Lab · Science, 2018</a>
+        <div class="bo-fact-block f3">
+          <div class="bo-fact-number">6×</div>
+          <div class="bo-fact-label">More reach for content that triggers anger or fear. The algorithm doesn't optimise for truth — it optimises for reaction.</div>
+          <a class="bo-fact-source" href="https://www.science.org/doi/10.1126/science.aap9559" target="_blank">MIT Media Lab · Science, 2018</a>
+        </div>
       </div>
 
       <div class="bo-tap-zone bo-tap-prev" onclick="boBack()"></div>
@@ -5958,22 +5999,24 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="bo-beat-label">WHAT IT COSTS DENMARK</div>
       <div class="bo-big-claim bo-big-claim-3">While you scrolled,<br>your public sphere<br>was being bought.</div>
 
-      <div class="bo-fact-block f1">
-        <div class="bo-fact-number bo-fact-number-blue">€5.75M</div>
-        <div class="bo-fact-label">Meta's EU lobbying spend in 2022 alone — working to weaken the Digital Services Act and block GDPR enforcement.</div>
-        <a class="bo-fact-source" href="https://www.lobbyfacts.eu/representative/facebook-ireland-limited/9395761370-45" target="_blank">LobbyFacts EU · 2022</a>
-      </div>
+      <div class="bo-facts-row">
+        <div class="bo-fact-block f1">
+          <div class="bo-fact-number bo-fact-number-blue">€5.75M</div>
+          <div class="bo-fact-label">Meta's EU lobbying spend in 2022 alone — working to weaken the Digital Services Act and block GDPR enforcement.</div>
+          <a class="bo-fact-source" href="https://www.lobbyfacts.eu/representative/facebook-ireland-limited/9395761370-45" target="_blank">LobbyFacts EU · 2022</a>
+        </div>
 
-      <div class="bo-fact-block f2">
-        <div class="bo-fact-number bo-fact-number-blue">−60%</div>
-        <div class="bo-fact-label">Drop in Danish newspaper ad revenue over the decade Meta scaled here. Local newsrooms closed. Local politics went uncovered.</div>
-        <a class="bo-fact-source" href="https://www.dr.dk/nyheder/kultur/medierne-mister-millioner-til-facebook-og-google" target="_blank">DR Nyheder · 2023</a>
-      </div>
+        <div class="bo-fact-block f2">
+          <div class="bo-fact-number bo-fact-number-blue">−60%</div>
+          <div class="bo-fact-label">Drop in Danish newspaper ad revenue over the decade Meta scaled here. Local newsrooms closed. Local politics went uncovered.</div>
+          <a class="bo-fact-source" href="https://www.dr.dk/nyheder/kultur/medierne-mister-millioner-til-facebook-og-google" target="_blank">DR Nyheder · 2023</a>
+        </div>
 
-      <div class="bo-fact-block f3">
-        <div class="bo-fact-number bo-fact-number-blue">€1.2B</div>
-        <div class="bo-fact-label">GDPR fine — the largest ever issued. Meta paid it, then continued the same data transfers the following day.</div>
-        <a class="bo-fact-source" href="https://www.dataprotection.ie/en/news-media/press-releases/data-protection-commission-announces-conclusion-of-inquiry-into-meta-platforms-ireland-limited" target="_blank">Irish DPC · May 2023</a>
+        <div class="bo-fact-block f3">
+          <div class="bo-fact-number bo-fact-number-blue">€1.2B</div>
+          <div class="bo-fact-label">GDPR fine — the largest ever issued. Meta paid it, then continued the same data transfers the following day.</div>
+          <a class="bo-fact-source" href="https://www.dataprotection.ie/en/news-media/press-releases/data-protection-commission-announces-conclusion-of-inquiry-into-meta-platforms-ireland-limited" target="_blank">Irish DPC · May 2023</a>
+        </div>
       </div>
 
       <div class="bo-tap-zone bo-tap-prev" onclick="boBack()"></div>
