@@ -153,7 +153,7 @@ textarea.input{min-height:80px;resize:none}
   #desktop-sidebar{display:flex;left:max(0px,calc((100vw - 960px)/2));}
   .modal-sheet{max-width:560px;}
   .topbar{padding:16px 24px 12px;}
-  #boycott-onboarding{left:max(200px,calc((100vw - 960px)/2 + 200px));transform:none;max-width:none;}
+  #boycott-onboarding{left:0;right:0;top:0;bottom:0;transform:none;max-width:100%;width:100%;}
 }
 
 </style>
@@ -281,7 +281,7 @@ textarea.input{min-height:80px;resize:none}
 
     <!-- LEAVING META TOGETHER — EVENT BANNER -->
     <div style="margin:12px 20px 0;" class="anim d2">
-      <div style="background:linear-gradient(135deg,#0d2b24 0%,#1a4a3a 100%);border-radius:14px;padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;" onclick="openBrowse('localevent')">
+      <div style="background:linear-gradient(135deg,#1a1040 0%,#2d1b69 100%);border-radius:14px;padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;" onclick="openBrowse('localevent')">
         <div style="position:absolute;right:-18px;top:-18px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
         <div style="display:flex;align-items:flex-start;gap:11px;">
           <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:6px;flex-shrink:0;margin-top:1px;">
@@ -304,10 +304,10 @@ textarea.input{min-height:80px;resize:none}
     </div>
 
     <!-- META ALTERNATIVES — shown below boycott card -->
-    <div style="margin:0 20px;" class="anim d2">
+    <div style="margin:20px 20px 0;" class="anim d2">
       <div style="margin-bottom:10px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-          <div class="section-title" style="margin:0;">Where you land after Meta</div>
+          <div class="section-title" style="margin:0;">Some alternatives we recommend</div>
           <span class="show-all" onclick="openBrowse('alternative')">More →</span>
         </div>
         <div style="font-size:12px;color:var(--mid);line-height:1.6;">Your photos, contacts and history can move with you. Tap any option to see how.</div>
