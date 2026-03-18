@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Colors */
+  --color-bg: #f3f4f1;
+  --color-white: #fff;
+  --color-border: #e2e4de;
+  --color-border2: #cdd0c8;
+  --color-text: #111;
+  --color-mid: #5a5f58;
+  --color-dim: #9aa09a;
+  --color-dimmer: #c8ccc4;
+
+  --color-teal: #1a7a6a;
+  --color-teal-2: #156355;
+  --color-teal-bg: #edf7f5;
+  --color-teal-border: #b8ddd8;
+
+  --color-amber: #8a6000;
+  --color-amber-bg: #fdf7ee;
+  --color-amber-border: #e8d090;
+
+  --color-warn: #c05010;
+  --color-warn-bg: #fdf2ec;
+  --color-warn-border: #f0c8a8;
+
+  --color-sand: #c8a464;
+  --color-sand-2: #a07830;
+  --color-sand-3: #d4b47c;
+
+  /* Bubble colors */
+  --color-bubble-war-bg: #fee2e2;
+  --color-bubble-war-text: #b91c1c;
+  --color-bubble-pol-bg: #fef3c7;
+  --color-bubble-pol-text: #92400e;
+  --color-bubble-data-bg: #ede9fe;
+  --color-bubble-data-text: #5b21b6;
+  --color-bubble-labour-bg: #fce7f3;
+  --color-bubble-labour-text: #9d174d;
+  --color-bubble-env-bg: #d1fae5;
+  --color-bubble-env-text: #065f46;
+  --color-bubble-tax-bg: #e0e7ff;
+  --color-bubble-tax-text: #3730a3;
+  --color-bubble-settler-bg: #fee2e2;
+  --color-bubble-settler-text: #7f1d1d;
+  --color-bubble-mis-bg: #fef9c3;
+  --color-bubble-mis-text: #713f12;
+  --color-bubble-animal-bg: #ecfdf5;
+  --color-bubble-animal-text: #065f46;
+  --color-bubble-indig-bg: #fdf4ff;
+  --color-bubble-indig-text: #701a75;
+
+  /* Fonts — var names match Next.js font variables (suffixed -var to avoid circular refs) */
+  --font-sans: var(--font-outfit-var);
+  --font-mono: var(--font-synemono-var);
+  --font-syne: var(--font-syne-var);
+  --font-caveat: var(--font-caveat-var);
+}
+
+* {
+  /* margin: 0; */
+  /* padding: 0; */
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-outfit), "Outfit", sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
