@@ -6,8 +6,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Bubble } from '@/components/ui/Bubble'
 import { CompanyRow } from '@/components/company/CompanyRow'
+import { CandidateCard } from '@/components/company/CandidateCard'
 import { companies } from '@/lib/data/companies'
-import { getActiveBoycott } from '@/lib/data/boycotts'
+import { getActiveBoycott, nextBoycottCandidates } from '@/lib/data/boycotts'
 
 const GrainPile = dynamic(() => import('@/components/grain/GrainPile'), { ssr: false })
 
@@ -15,9 +16,13 @@ type Scope = 'you' | 'city' | 'dk'
 
 const activeBoycott = getActiveBoycott()
 const activeCompany = companies.find((c) => c.id === activeBoycott?.companyId)
+const candidateCompanies = companies.filter((c) => nextBoycottCandidates.includes(c.id))
 const otherCompanies = companies
-  .filter((c) => c.id !== activeBoycott?.companyId)
-  .slice(0, 5)
+  .filter((c) => c.id !== activeBoycott?.companyId && !nextBoycottCandidates.includes(c.id))
+  .slice(0, 4)
+
+// Static vote distribution (real voting comes with Supabase in Phase 4)
+const CANDIDATE_VOTES = [42, 35, 23]
 
 function daysLeft(endDate: string): number {
   const end = new Date(endDate)
@@ -175,8 +180,33 @@ export default function HomePage() {
           </Link>
         </div>
 
+        {/* ── Next boycott candidates ── */}
+        {candidateCompanies.length > 0 && (
+          <>
+            <div className="px-5 mt-5 mb-2">
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="font-syne font-bold text-[15px]">Vælg næste bojkot</span>
+                <span className="font-mono text-[9px] text-teal tracking-[.3px]">APRIL</span>
+              </div>
+              <p className="font-mono text-[9px] text-dim leading-snug">
+                Hvem boycotter vi næste måned? Klik for at læse mere — afstemningen åbner 25. marts.
+              </p>
+            </div>
+            <div className="mx-5 bg-white border border-border rounded-2xl overflow-hidden mb-5">
+              {candidateCompanies.map((company, i) => (
+                <CandidateCard
+                  key={company.id}
+                  company={company}
+                  rank={i + 1}
+                  votePct={CANDIDATE_VOTES[i] ?? 0}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
         {/* ── More companies section ── */}
-        <div className="px-5 mt-4 mb-2 flex items-center justify-between">
+        <div className="px-5 mt-1 mb-2 flex items-center justify-between">
           <span className="font-syne font-bold text-[15px]">Andre virksomheder</span>
           <Link href="/companies" className="font-mono text-[10px] text-teal no-underline tracking-[.4px]">
             SE ALLE

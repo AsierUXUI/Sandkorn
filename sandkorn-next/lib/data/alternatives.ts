@@ -2,6 +2,33 @@ import type { Alternative } from '@/types/alternative'
 
 export const alternatives: Alternative[] = [
 
+  // ── Wolt alternatives ────────────────────────────────────────────────────
+
+  {
+    id: 'hungry',
+    name: 'Hungry.dk',
+    sub: 'Madlevering',
+    description: 'Just Eats danske platform med bude ansat på overenskomst — timeløn, feriepenge og pension. Direkte alternativ til Wolt i København.',
+    url: 'https://www.hungry.dk',
+    logo: 'Hu',
+    logoBg: '#fff0ec',
+    logoCl: '#e04020',
+    replacesIds: ['wolt'],
+    danish: true,
+  },
+  {
+    id: 'direkte-restaurant',
+    name: 'Bestil direkte',
+    sub: 'Ring eller gå ind',
+    description: 'De fleste restauranter i København tager imod bestillinger direkte per telefon eller via egen hjemmeside — pengene går til restauranten, ikke til en platform.',
+    url: 'https://www.yelp.dk',
+    logo: 'R',
+    logoBg: '#f0fff4',
+    logoCl: '#1a7a42',
+    replacesIds: ['wolt'],
+    free: true,
+  },
+
   // ── Meta alternatives ─────────────────────────────────────────────────────
 
   {
