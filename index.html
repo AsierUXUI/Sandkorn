@@ -271,7 +271,7 @@ textarea.input{min-height:80px;resize:none}
 
       <!-- COMPANY ROW — tap → dossier -->
       <div onclick="openDossier('wolt')" style="padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border-bottom:1px solid var(--border);">
-        <div style="width:34px;height:34px;border-radius:8px;flex-shrink:0;background:#e8f4ff;border:1px solid #cce4f6;display:flex;align-items:center;justify-content:center;font-family:'Syne Mono',monospace;font-size:13px;font-weight:700;color:#009de0;">W</div>
+        <img src="img/img-wolt.svg" style="width:34px;height:34px;border-radius:8px;object-fit:cover;flex-shrink:0;">
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
             <div class="syne" style="font-size:17px;font-weight:800;">Wolt</div>
@@ -1565,7 +1565,7 @@ const catDesc={
 
 const companies=[
   // ── Active boycott ────────────────────────────────────────────────────────
-  {id:'wolt',name:'Wolt',sub:'Madlevering · Helsinki / DoorDash',cat:'food',priority:'high',deletions:0,bubbles:['labour'],logo:'W',logoImg:'',logoBg:'#e8f4ff',logoCl:'#009de0',actionType:'link',
+  {id:'wolt',name:'Wolt',sub:'Madlevering · Helsinki / DoorDash',cat:'food',priority:'high',deletions:0,bubbles:['labour'],logo:'W',logoImg:'img/img-wolt.svg',logoBg:'#00C2D4',logoCl:'white',actionType:'link',
     actions:[
       {id:'wolt-a1',date:'10 SEP 2023',source:'Fagbladet 3F',sourceUrl:'https://fagbladet3f.dk/tyder-paa-snyd-mange-wolt-bude-arbejder-mere-end-100-timer-om-ugen/',bubbles:['labour'],text:'Wolts ~1.500 bude i København er klassificeret som "selvstændige partnere" — ingen sygedagpenge, feriepenge, pension eller garanteret minimaløn. Arbejdsmarkedsforsker Christian Haldrup fandt via Wolts egne data ca. 300 tilfælde, hvor et bud tilsyneladende arbejdede over 100 timer ugentligt — tegn på delt kontobrug, hvilket er ulovligt.'},
       {id:'wolt-a2',date:'24 MAJ 2023',source:'Skatterådet / WageIndicator',sourceUrl:'https://wageindicator.org/what-we-do/news-stories/gig-news/2023/may-2023-denmark-wolt-riders-are-employess-the-danish-tax-authority-says/',bubbles:['labour'],text:'Det danske Skatteråd fastslog, at Wolt-bude skatteretligt skal behandles som lønmodtagere. Wolt ændrede sin model og indeholder nu skat fra budenes indtjening — men fastholder, at bude ikke er lønmodtagere i overenskomstmæssig forstand og dermed ikke har ret til ferie, ATP eller sygeløn.'},
@@ -1574,8 +1574,8 @@ const companies=[
     ]
   },
   // ── Next boycott candidates ───────────────────────────────────────────────
-  {id:'netto',name:'Netto',sub:'Salling Group · Dagligvarer',cat:'retail',priority:'high',deletions:0,bubbles:['labour'],logo:'N',logoImg:'',logoBg:'#fff8e0',logoCl:'#333',actionType:'link',candidatePitch:'Over halvdelen af Nettos ansatte har variable kontrakter — de kan ikke få boliglån og mister indkomst ved sygdom.'},
-  {id:'arla',name:'Arla Foods',sub:'Mejeri · Globalt andelsselskab',cat:'food',priority:'high',deletions:0,bubbles:['env','mis'],logo:'Ar',logoImg:'',logoBg:'#e8f4ff',logoCl:'#0066cc',actionType:'link',candidatePitch:'Markedsføres som "verdens grønneste mejeri" — men Greenpeace indgav i 2025 klage til myndighederne for greenwashing.'},
+  {id:'netto',name:'Netto',sub:'Salling Group · Dagligvarer',cat:'retail',priority:'high',deletions:0,bubbles:['labour'],logo:'N',logoImg:'img/img-netto.svg',logoBg:'#FFD700',logoCl:'#1a1a1a',actionType:'link',candidatePitch:'Over halvdelen af Nettos ansatte har variable kontrakter — de kan ikke få boliglån og mister indkomst ved sygdom.'},
+  {id:'arla',name:'Arla Foods',sub:'Mejeri · Globalt andelsselskab',cat:'food',priority:'high',deletions:0,bubbles:['env','mis'],logo:'Ar',logoImg:'img/img-arla.svg',logoBg:'#f0fff0',logoCl:'#2E7D32',actionType:'link',candidatePitch:'Markedsføres som "verdens grønneste mejeri" — men Greenpeace indgav i 2025 klage til myndighederne for greenwashing.'},
   {id:'bestseller',name:'Bestseller',sub:'Jack & Jones · Vero Moda · Only',cat:'retail',priority:'high',deletions:0,bubbles:['labour','env'],logo:'Bs',logoImg:'',logoBg:'#f4f4f4',logoCl:'#111',actionType:'link',candidatePitch:'Ejerens privatfly fløj 1.100 gange mens mærket sælger "bæredygtig mode" — og leverandører er linket til tvangsarbejde.'},
   // ── Other companies ───────────────────────────────────────────────────────
   {id:'meta',name:'Meta',sub:'Facebook · Instagram · WhatsApp',cat:'social',priority:'high',deletions:847,bubbles:['pol','data','mis','labour'],logo:'M',logoImg:'img/img-svg-1.svg',logoBg:'#e8f4ff',logoCl:'#0082fb',isSaaS:true,actionType:'gdpr'},
