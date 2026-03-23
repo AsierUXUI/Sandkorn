@@ -7,23 +7,48 @@ import Link from 'next/link'
 import { Bubble } from '@/components/ui/Bubble'
 import { CompanyRow } from '@/components/company/CompanyRow'
 import { companies } from '@/lib/data/companies'
+import { getActiveBoycott } from '@/lib/data/boycotts'
 
 const GrainPile = dynamic(() => import('@/components/grain/GrainPile'), { ssr: false })
 
 type Scope = 'you' | 'city' | 'dk'
 
-const SCOPE_DATA: Record<Scope, { n: string; label: string; eur: string; sub: string; grains: number }> = {
-  you:  { n: '3',     label: 'grains dropped',   eur: '625 kr',      sub: 'your yearly impact',   grains: 3 },
-  city: { n: '1,247', label: 'grains this week',  eur: '841.250 kr',  sub: '+312 this week',        grains: 180 },
-  dk:   { n: '9,284', label: 'grains this month', eur: '6,27M kr',    sub: '+2.1k this week',       grains: 420 },
+const activeBoycott = getActiveBoycott()
+const activeCompany = companies.find((c) => c.id === activeBoycott?.companyId)
+const otherCompanies = companies
+  .filter((c) => c.id !== activeBoycott?.companyId)
+  .slice(0, 5)
+
+function daysLeft(endDate: string): number {
+  const end = new Date(endDate)
+  const now = new Date()
+  return Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
 }
 
-const activeCompany = companies.find((c) => c.id === 'meta')!
-const otherCompanies = companies.filter((c) => c.id !== 'meta').slice(0, 5)
+function formatGrains(n: number): string {
+  return n.toLocaleString('da-DK')
+}
 
 export default function HomePage() {
   const [scope, setScope] = useState<Scope>('city')
-  const data = SCOPE_DATA[scope]
+
+  if (!activeBoycott || !activeCompany) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-dim font-mono text-[11px]">
+        Ingen aktiv bojkot denne måned.
+      </div>
+    )
+  }
+
+  const remaining = daysLeft(activeBoycott.endDate)
+  const progressPct = Math.min(100, Math.round((activeBoycott.grains / activeBoycott.goal) * 100))
+
+  const scopeData = {
+    you:  { n: formatGrains(activeBoycott.yourGrains), label: 'korn du har lagt', grains: activeBoycott.yourGrains },
+    city: { n: formatGrains(activeBoycott.cityGrains), label: 'korn i din by',    grains: Math.min(activeBoycott.cityGrains, 250) },
+    dk:   { n: formatGrains(activeBoycott.grains),     label: 'korn i Danmark',   grains: Math.min(activeBoycott.grains, 420) },
+  }
+  const data = scopeData[scope]
 
   return (
     <div className="min-h-screen flex flex-col pb-20 md:pb-10 max-w-[430px] md:max-w-[860px] mx-auto">
@@ -32,15 +57,10 @@ export default function HomePage() {
       <header className="md:hidden flex items-center justify-between px-5 py-3.5 sticky top-0 z-[100] bg-bg/96 backdrop-blur-[12px]">
         <span className="font-syne font-extrabold text-[19px] tracking-tight">sandkorn</span>
         <button className="w-9 h-9 rounded-full border border-border bg-white cursor-pointer flex items-center justify-center">
-          <svg viewBox="0 0 28 28" width="20" height="20" fill="none">
-            <circle cx="14" cy="8" r="4" fill="#c8a464"/>
-            <circle cx="8" cy="19" r="3.2" fill="#a07830"/>
-            <circle cx="20" cy="19" r="3.2" fill="#a07830"/>
-            <circle cx="14" cy="25" r="2.4" fill="#c8ccc4"/>
-            <line x1="14" y1="12" x2="9" y2="16.2" stroke="#c8ccc4" strokeWidth="1.2"/>
-            <line x1="14" y1="12" x2="19" y2="16.2" stroke="#c8ccc4" strokeWidth="1.2"/>
-            <line x1="9" y1="22.2" x2="12.5" y2="23.2" stroke="#c8ccc4" strokeWidth="1.2"/>
-            <line x1="20" y1="22.2" x2="16.5" y2="23.2" stroke="#c8ccc4" strokeWidth="1.2"/>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+            <polyline points="16 6 12 2 8 6"/>
+            <line x1="12" y1="2" x2="12" y2="15"/>
           </svg>
         </button>
       </header>
@@ -54,11 +74,11 @@ export default function HomePage() {
           <div className="px-3.5 py-2.5 border-b border-border">
             <div className="flex justify-between items-end mb-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="font-mono text-[9px] text-dim tracking-[.5px]">BOYCOTT OF THE MONTH</span>
+                <span className="font-mono text-[9px] text-dim tracking-[.5px]">MÅNEDENS BOJKOT</span>
                 <div className="w-[5px] h-[5px] rounded-full bg-[#e05050]" />
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[9px] text-teal font-semibold">18 days left</span>
+                <span className="font-mono text-[9px] text-teal font-semibold">{remaining} dage tilbage</span>
                 {/* Scope switcher */}
                 <div className="flex border border-border rounded-[6px] overflow-hidden bg-bg">
                   {(['you', 'city', 'dk'] as Scope[]).map((s) => (
@@ -69,7 +89,7 @@ export default function HomePage() {
                         scope === s ? 'bg-text text-white' : 'bg-transparent text-dim'
                       }`}
                     >
-                      {s === 'you' ? 'YOU' : s === 'city' ? 'CPH' : 'DK'}
+                      {s === 'you' ? 'DIG' : s === 'city' ? 'CPH' : 'DK'}
                     </button>
                   ))}
                 </div>
@@ -77,14 +97,17 @@ export default function HomePage() {
             </div>
             {/* Progress bar */}
             <div className="h-[7px] bg-border rounded-full overflow-hidden relative">
-              <div className="h-full bg-teal rounded-full" style={{ width: '28%' }} />
+              <div className="h-full bg-teal rounded-full transition-all" style={{ width: `${progressPct}%` }} />
               <div className="absolute top-0 left-1/2 w-px h-full bg-black/20" />
             </div>
             <div className="flex justify-between mt-1">
               <span className="font-syne font-bold text-[12px]">
-                1,247 <span className="font-mono font-normal text-[9px] text-dim">joining</span>
+                {formatGrains(activeBoycott.grains)}{' '}
+                <span className="font-mono font-normal text-[9px] text-dim">korn lagt</span>
               </span>
-              <span className="font-mono text-[8px] text-dim pt-0.5">50% = earnings call threshold · goal 4,500</span>
+              <span className="font-mono text-[8px] text-dim pt-0.5">
+                {progressPct}% af mål · goal {formatGrains(activeBoycott.goal)}
+              </span>
             </div>
           </div>
 
@@ -128,13 +151,10 @@ export default function HomePage() {
               </div>
               <div className="h-px bg-border" />
               <div>
-                <div className="font-syne font-bold text-[15px] text-teal">{data.eur}</div>
-                <div className="font-mono text-[9px] text-dim mt-0.5 leading-snug">
-                  Estimated impact per year<br />
-                  <span className="text-dimmer">Local community impact</span>
+                <div className="font-syne font-bold text-[14px] text-teal leading-snug">
+                  {activeBoycott.tagline}
                 </div>
               </div>
-              <span className="font-mono text-[9px] text-teal">{data.sub}</span>
             </div>
           </div>
 
@@ -144,8 +164,10 @@ export default function HomePage() {
             className="px-4 py-3.5 bg-[#1a1a1a] flex items-center justify-between cursor-pointer border-t-2 border-teal no-underline hover:bg-[#2a2a2a] transition-colors"
           >
             <div>
-              <div className="text-[15px] font-bold text-white tracking-tight">Join this boycott →</div>
-              <div className="font-mono text-[10px] text-white/45 mt-0.5">Boycott Meta this month · see why it matters</div>
+              <div className="text-[15px] font-bold text-white tracking-tight">Deltag i bojkotten →</div>
+              <div className="font-mono text-[10px] text-white/45 mt-0.5">
+                Bojkot {activeCompany.name} denne måned · se hvorfor det betyder noget
+              </div>
             </div>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="2" strokeLinecap="round">
               <path d="M9 18l6-6-6-6"/>

@@ -7,7 +7,9 @@ import { notFound } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
 import { Bubble } from '@/components/ui/Bubble'
 import { Button } from '@/components/ui/Button'
+import { AlternativeCard } from '@/components/alternatives/AlternativeCard'
 import { companies } from '@/lib/data/companies'
+import { getAlternativesFor } from '@/lib/data/alternatives'
 import type { BubbleKey } from '@/types/company'
 
 const TABS = ['WHAT WE FOUND', 'WHO OWNS IT', 'MIGRATE']
@@ -22,6 +24,7 @@ export default function CompanyDossierPage({ params }: { params: Promise<{ id: s
 
   const companyActions = company.actions?.filter((a) => !a.isOwnerAction) ?? []
   const ownerActions = company.actions?.filter((a) => a.isOwnerAction) ?? []
+  const alts = getAlternativesFor(company.id)
 
   return (
     <div className="min-h-screen flex flex-col max-w-[430px] md:max-w-[860px] mx-auto pb-24">
@@ -183,15 +186,23 @@ export default function CompanyDossierPage({ params }: { params: Promise<{ id: s
 
         {/* Tab 2: Migrate */}
         {activeTab === 2 && (
-          <div className="text-center py-12 text-dim">
-            <p className="font-mono text-[11px] mb-2">ALTERNATIVER</p>
-            <p className="text-[13px] mb-4">Se alle alternativer til {company.name}.</p>
-            <Link
-              href="/alternatives"
-              className="inline-flex items-center gap-1 font-mono text-[11px] text-teal no-underline border border-teal-border bg-teal-bg px-3 py-1.5 rounded-full"
-            >
-              Udforsk alternativer →
-            </Link>
+          <div>
+            {alts.length > 0 ? (
+              <>
+                <p className="font-mono text-[10px] text-dim tracking-[1px] mb-2">
+                  ALTERNATIVER TIL {company.name.toUpperCase()}
+                </p>
+                <div className="bg-white border border-border rounded-2xl overflow-hidden mb-4">
+                  {alts.map((alt) => (
+                    <AlternativeCard key={alt.id} alt={alt} />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12 text-dim">
+                <p className="font-mono text-[11px]">Alternativer kommer snart</p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -208,15 +219,10 @@ export default function CompanyDossierPage({ params }: { params: Promise<{ id: s
           </Button>
         )}
         <button className="w-[46px] h-[46px] rounded-xl border border-border bg-white cursor-pointer flex items-center justify-center flex-shrink-0">
-          <svg viewBox="0 0 28 28" width="20" height="20" fill="none">
-            <circle cx="14" cy="8" r="3.8" fill="#c8a464"/>
-            <circle cx="8" cy="19" r="3" fill="#a07830"/>
-            <circle cx="20" cy="19" r="3" fill="#a07830"/>
-            <circle cx="14" cy="25" r="2.3" fill="#c8ccc4"/>
-            <line x1="14" y1="11.8" x2="9" y2="16.2" stroke="#c8ccc4" strokeWidth="1.1"/>
-            <line x1="14" y1="11.8" x2="19" y2="16.2" stroke="#c8ccc4" strokeWidth="1.1"/>
-            <line x1="9" y1="22.1" x2="12.3" y2="23.2" stroke="#c8ccc4" strokeWidth="1.1"/>
-            <line x1="20" y1="22.1" x2="16.7" y2="23.2" stroke="#c8ccc4" strokeWidth="1.1"/>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+            <polyline points="16 6 12 2 8 6"/>
+            <line x1="12" y1="2" x2="12" y2="15"/>
           </svg>
         </button>
       </div>
