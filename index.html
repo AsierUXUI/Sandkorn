@@ -171,28 +171,6 @@ textarea.input{min-height:80px;resize:none}
   .ds-tab.active svg{stroke:#fff !important;}
   .ds-tab svg{width:16px;height:16px;}
 
-  /* ── Boycott journey — full-screen story ── */
-  #boycott-onboarding{left:0;right:0;top:0;bottom:0;transform:none;max-width:100%;width:100%;}
-  .bo-card{padding:80px 60px 100px;align-items:center;}
-  /* Center all direct card children with a max-width */
-  .bo-card>*:not(.bo-card-bg):not(.bo-tap-zone){max-width:700px;width:100%;}
-  /* Bigger headlines */
-  .bo-card-1 .bo-headline{font-size:42px;line-height:1.1;}
-  .bo-card-1 .bo-subline{font-size:17px;max-width:500px;}
-  .bo-card-2 .bo-big-claim{font-size:42px;}
-  .bo-big-claim-3{font-size:38px;}
-  .bo-world-headline{font-size:40px;line-height:1.1;}
-  .bo-pipeline-headline{font-size:36px;}
-  .bo-anguish-q{font-size:52px;max-width:540px;}
-  .bo-anguish-l{font-size:20px;max-width:480px;}
-  /* Fact blocks — 3 columns on desktop */
-  .bo-facts-row{display:flex;flex-direction:row;gap:20px;max-width:860px !important;}
-  .bo-facts-row .bo-fact-block{flex:1;min-width:0;margin-bottom:0;}
-  /* Beat 6 chain — constrained width */
-  .bo-chain{max-width:580px;}
-  /* Beat 7 */
-  .bo-grain-goal{max-width:400px;}
-  .bo-cta-primary{max-width:480px;margin:0 auto 10px;}
 }
 
 </style>
@@ -5934,6 +5912,31 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 .bo-tap-prev { left: 0; }
 .bo-tap-next { right: 0; }
+
+/* ── Desktop overrides for boycott journey (must come AFTER base styles) ── */
+@media(min-width:768px){
+  #boycott-onboarding{
+    left:0 !important;right:0 !important;top:0 !important;bottom:0 !important;
+    width:100vw !important;height:100vh !important;
+    max-width:none !important;transform:none !important;
+  }
+  #bo-track{height:100vh;}
+  .bo-card{padding:80px 60px 100px;align-items:center;}
+  .bo-card>*:not(.bo-card-bg):not(.bo-tap-zone){max-width:700px;width:100%;}
+  .bo-card-1 .bo-headline{font-size:42px;line-height:1.1;}
+  .bo-card-1 .bo-subline{font-size:17px;max-width:500px;}
+  .bo-card-2 .bo-big-claim{font-size:42px;}
+  .bo-big-claim-3{font-size:38px;}
+  .bo-world-headline{font-size:40px;line-height:1.1;}
+  .bo-pipeline-headline{font-size:36px;}
+  .bo-anguish-q{font-size:52px;max-width:540px;}
+  .bo-anguish-l{font-size:20px;max-width:480px;}
+  .bo-facts-row{display:flex;flex-direction:row;gap:20px;max-width:860px !important;}
+  .bo-facts-row .bo-fact-block{flex:1;min-width:0;margin-bottom:0;}
+  .bo-chain{max-width:580px;}
+  .bo-grain-goal{max-width:400px;}
+  .bo-cta-group{max-width:480px;}
+}
 
 </style>
 
