@@ -247,11 +247,11 @@ textarea.input{min-height:80px;resize:none}
       <div style="padding:10px 14px 9px;border-bottom:1px solid var(--border);">
         <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:5px;">
           <div style="display:flex;align-items:center;gap:6px;">
-            <div class="mono" style="font-size:9px;color:var(--dim);letter-spacing:.5px;">BOYCOTT OF THE MONTH</div>
+            <div class="mono" style="font-size:9px;color:var(--dim);letter-spacing:.5px;">MÅNEDENS BOJKOT</div>
             <div style="width:5px;height:5px;border-radius:50%;background:#e05050;"></div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <div class="mono" style="font-size:9px;color:var(--teal);font-weight:600;">18 days left</div>
+            <div class="mono" style="font-size:9px;color:var(--teal);font-weight:600;">8 dage tilbage</div>
             <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg);">
               <button id="stab-you" onclick="event.stopPropagation();setScope('you',this)" style="flex:none;padding:4px 9px;border:none;background:none;cursor:pointer;font-family:'Syne Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:.3px;transition:all .15s;">YOU</button>
               <button id="stab-city" onclick="event.stopPropagation();setScope('city',this)" style="flex:none;padding:4px 9px;border:none;background:var(--text);cursor:pointer;font-family:'Syne Mono',monospace;font-size:9px;color:white;letter-spacing:.3px;transition:all .15s;">CPH</button>
@@ -260,27 +260,25 @@ textarea.input{min-height:80px;resize:none}
           </div>
         </div>
         <div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden;position:relative;">
-          <div style="width:28%;height:100%;background:var(--teal);border-radius:4px;"></div>
+          <div style="width:16%;height:100%;background:var(--teal);border-radius:4px;"></div>
           <div style="position:absolute;top:0;left:50%;width:1px;height:100%;background:rgba(0,0,0,.18);"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:4px;">
-          <div class="syne" style="font-size:12px;font-weight:700;">1,247 <span class="mono" style="font-size:9px;font-weight:400;color:var(--dim);">joining</span></div>
-          <div class="mono" style="font-size:8px;color:var(--dim);padding-top:2px;">50% = earnings call threshold · goal 4,500</div>
+          <div class="syne" style="font-size:12px;font-weight:700;">312 <span class="mono" style="font-size:9px;font-weight:400;color:var(--dim);">korn lagt</span></div>
+          <div class="mono" style="font-size:8px;color:var(--dim);padding-top:2px;">16% af mål · goal 2.000</div>
         </div>
       </div>
 
       <!-- COMPANY ROW — tap → dossier -->
-      <div onclick="openDossier('meta')" style="padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border-bottom:1px solid var(--border);">
-        <img src="img/img-svg-1.svg" style="width:34px;height:34px;border-radius:8px;object-fit:contain;flex-shrink:0;background:white;border:1px solid #eee;">
+      <div onclick="openDossier('wolt')" style="padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border-bottom:1px solid var(--border);">
+        <div style="width:34px;height:34px;border-radius:8px;flex-shrink:0;background:#e8f4ff;border:1px solid #cce4f6;display:flex;align-items:center;justify-content:center;font-family:'Syne Mono',monospace;font-size:13px;font-weight:700;color:#009de0;">W</div>
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
-            <div class="syne" style="font-size:17px;font-weight:800;">Meta</div>
-            <div class="mono" style="font-size:9px;color:var(--dim);">Facebook · Instagram · WhatsApp</div>
+            <div class="syne" style="font-size:17px;font-weight:800;">Wolt</div>
+            <div class="mono" style="font-size:9px;color:var(--dim);">Madlevering · Helsinki / DoorDash</div>
           </div>
           <div style="display:flex;gap:4px;flex-wrap:wrap;">
-            <span class="bubble b-pol" style="font-size:9px;padding:2px 7px;">Political funding</span>
-            <span class="bubble b-data" style="font-size:9px;padding:2px 7px;">Data exploitation</span>
-            <span class="bubble b-mis" style="font-size:9px;padding:2px 7px;">Misinformation</span>
+            <span class="bubble b-labour" style="font-size:9px;padding:2px 7px;">Arbejdsvilkår</span>
           </div>
         </div>
       </div>
@@ -296,23 +294,21 @@ textarea.input{min-height:80px;resize:none}
         <!-- RIGHT: numbers -->
         <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 13px;gap:6px;">
           <div>
-            <div class="syne" id="scope-n" style="font-size:24px;font-weight:800;line-height:1;">1,247</div>
-            <div class="mono" id="scope-label" style="font-size:9px;color:var(--mid);margin-top:3px;line-height:1.4;">people boycotting</div>
+            <div class="syne" id="scope-n" style="font-size:24px;font-weight:800;line-height:1;">187</div>
+            <div class="mono" id="scope-label" style="font-size:9px;color:var(--mid);margin-top:3px;line-height:1.4;">korn i din by</div>
           </div>
           <div style="height:1px;background:var(--border);"></div>
-          <div id="scope-impact-block">
-            <div class="syne" id="scope-eur" style="font-size:15px;font-weight:700;color:var(--teal);">625 kr</div>
-            <div class="mono" style="font-size:9px;color:var(--dim);margin-top:2px;line-height:1.5;">Estimated impact per year<br><span style="color:var(--dimmer);">This is money going to local communities</span></div>
+          <div>
+            <div class="syne" style="font-size:14px;font-weight:700;color:var(--teal);line-height:1.3;">Din levering koster mere end du tror</div>
           </div>
-          <div class="mono" id="scope-sub" style="font-size:9px;color:var(--teal);">tap for briefing →</div>
         </div>
       </div>
 
       <!-- CTA STRIP — join boycott -->
-      <div style="padding:14px 16px;background:#1a1a1a;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-top:2px solid var(--teal);transition:background .15s;" onmouseenter="this.style.background='#2a2a2a'" onmouseleave="this.style.background='#1a1a1a'" onclick="openBoycottOnboarding('meta')">
+      <div style="padding:14px 16px;background:#1a1a1a;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-top:2px solid var(--teal);transition:background .15s;" onmouseenter="this.style.background='#2a2a2a'" onmouseleave="this.style.background='#1a1a1a'" onclick="openDossier('wolt')">
         <div>
-          <div style="font-size:15px;font-weight:700;color:white;letter-spacing:-.2px;">Join this boycott →</div>
-          <div class="mono" style="font-size:10px;color:rgba(255,255,255,.45);margin-top:3px;">Boycott Meta this month · see why it matters</div>
+          <div style="font-size:15px;font-weight:700;color:white;letter-spacing:-.2px;">Deltag i bojkotten →</div>
+          <div class="mono" style="font-size:10px;color:rgba(255,255,255,.45);margin-top:3px;">Bojkot Wolt denne måned · se hvorfor det betyder noget</div>
         </div>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg>
       </div>
@@ -362,12 +358,12 @@ textarea.input{min-height:80px;resize:none}
 
     <!-- CHOOSE NEXT BOYCOTT -->
     <div style="margin:22px 20px 0;" class="anim d3">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <div class="section-title" style="margin:0;">Choose the next boycott</div>
-        <span class="show-all" onclick="openBrowse('company')">See all →</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div class="section-title" style="margin:0;">Vælg næste bojkot</div>
+        <span class="mono" style="font-size:9px;color:var(--teal);letter-spacing:.3px;">APRIL</span>
       </div>
-      <div class="mono" style="font-size:9px;color:var(--dim);margin-bottom:10px;letter-spacing:.4px;padding:0 1px;">TAP A COMPANY · MOST VOTED PICKS NEXT MONTH</div>
-      <div class="carousel-wrap" id="carousel-next-boycott"></div>
+      <div class="mono" style="font-size:9px;color:var(--dim);margin-bottom:10px;line-height:1.5;">Hvem boycotter vi næste måned? Klik for at læse mere — afstemningen åbner 25. marts.</div>
+      <div id="candidates-list" style="background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;"></div>
     </div>
 
     <!-- DO YOUR BIT — hidden for now -->
@@ -628,8 +624,8 @@ textarea.input{min-height:80px;resize:none}
           </div>
         </div>
       </div>
-      <div class="mono" style="font-size:10px;color:var(--amber);letter-spacing:1px;margin-bottom:6px;">OWNER ACTIONS</div>
-      <div class="card" style="overflow:hidden;margin-bottom:14px;">
+      <div class="mono owner-actions-section" style="font-size:10px;color:var(--amber);letter-spacing:1px;margin-bottom:6px;">OWNER ACTIONS</div>
+      <div class="card owner-actions-card" style="overflow:hidden;margin-bottom:14px;">
         <div style="padding:12px 15px;border-left:3px solid var(--amber);border-bottom:1px solid var(--border);">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;">
             <div class="mono" style="font-size:10px;color:var(--dim);">MARK ZUCKERBERG · 07 JAN 2025</div>
@@ -1568,6 +1564,20 @@ const catDesc={
 };
 
 const companies=[
+  // ── Active boycott ────────────────────────────────────────────────────────
+  {id:'wolt',name:'Wolt',sub:'Madlevering · Helsinki / DoorDash',cat:'food',priority:'high',deletions:0,bubbles:['labour'],logo:'W',logoImg:'',logoBg:'#e8f4ff',logoCl:'#009de0',actionType:'link',
+    actions:[
+      {id:'wolt-a1',date:'10 SEP 2023',source:'Fagbladet 3F',sourceUrl:'https://fagbladet3f.dk/tyder-paa-snyd-mange-wolt-bude-arbejder-mere-end-100-timer-om-ugen/',bubbles:['labour'],text:'Wolts ~1.500 bude i København er klassificeret som "selvstændige partnere" — ingen sygedagpenge, feriepenge, pension eller garanteret minimaløn. Arbejdsmarkedsforsker Christian Haldrup fandt via Wolts egne data ca. 300 tilfælde, hvor et bud tilsyneladende arbejdede over 100 timer ugentligt — tegn på delt kontobrug, hvilket er ulovligt.'},
+      {id:'wolt-a2',date:'24 MAJ 2023',source:'Skatterådet / WageIndicator',sourceUrl:'https://wageindicator.org/what-we-do/news-stories/gig-news/2023/may-2023-denmark-wolt-riders-are-employess-the-danish-tax-authority-says/',bubbles:['labour'],text:'Det danske Skatteråd fastslog, at Wolt-bude skatteretligt skal behandles som lønmodtagere. Wolt ændrede sin model og indeholder nu skat fra budenes indtjening — men fastholder, at bude ikke er lønmodtagere i overenskomstmæssig forstand og dermed ikke har ret til ferie, ATP eller sygeløn.'},
+      {id:'wolt-a3',date:'22 JAN 2025',source:'Solidaritet.dk',sourceUrl:'https://solidaritet.dk/det-nye-arbejdsmarked-wolt-budes-kampe-i-koebenhavn/',bubbles:['labour'],text:'Budbringerforeningen i Danmark anlagde i 2025 søgsmål ved Københavns Byret og kræver efterbetaling af feriepenge og ATP-bidrag for alle bude. Sagen kan sætte præcedens for hele gig-sektorens arbejdsstyrke i Danmark og er støttet af 3F.'},
+      {id:'wolt-oa1',date:'09 NOV 2022',source:'Financial Times',sourceUrl:'https://www.ft.com/content/doordash-wolt-acquisition',bubbles:['labour'],isOwnerAction:true,ownerName:'Tony Xu / DoorDash',text:'Wolt blev opkøbt af amerikanske DoorDash for 8,1 milliarder dollar. DoorDash-CEO Tony Xu modtog i 2020 en kompensationspakke på ca. 2,8 mia. kr. — mens selskabets bude i Danmark leverer mad i regn og slud uden grundlæggende ansættelsesrettigheder.'},
+    ]
+  },
+  // ── Next boycott candidates ───────────────────────────────────────────────
+  {id:'netto',name:'Netto',sub:'Salling Group · Dagligvarer',cat:'retail',priority:'high',deletions:0,bubbles:['labour'],logo:'N',logoImg:'',logoBg:'#fff8e0',logoCl:'#333',actionType:'link',candidatePitch:'Over halvdelen af Nettos ansatte har variable kontrakter — de kan ikke få boliglån og mister indkomst ved sygdom.'},
+  {id:'arla',name:'Arla Foods',sub:'Mejeri · Globalt andelsselskab',cat:'food',priority:'high',deletions:0,bubbles:['env','mis'],logo:'Ar',logoImg:'',logoBg:'#e8f4ff',logoCl:'#0066cc',actionType:'link',candidatePitch:'Markedsføres som "verdens grønneste mejeri" — men Greenpeace indgav i 2025 klage til myndighederne for greenwashing.'},
+  {id:'bestseller',name:'Bestseller',sub:'Jack & Jones · Vero Moda · Only',cat:'retail',priority:'high',deletions:0,bubbles:['labour','env'],logo:'Bs',logoImg:'',logoBg:'#f4f4f4',logoCl:'#111',actionType:'link',candidatePitch:'Ejerens privatfly fløj 1.100 gange mens mærket sælger "bæredygtig mode" — og leverandører er linket til tvangsarbejde.'},
+  // ── Other companies ───────────────────────────────────────────────────────
   {id:'meta',name:'Meta',sub:'Facebook · Instagram · WhatsApp',cat:'social',priority:'high',deletions:847,bubbles:['pol','data','mis','labour'],logo:'M',logoImg:'img/img-svg-1.svg',logoBg:'#e8f4ff',logoCl:'#0082fb',isSaaS:true,actionType:'gdpr'},
   {id:'amazon',name:'Amazon',sub:'Prime · Audible · Twitch',cat:'tech',priority:'high',deletions:631,bubbles:['tax','labour','env','data'],logo:'A',logoImg:'img/img-svg-2.svg',logoBg:'#fff8e8',logoCl:'#b86e0a',isSaaS:true,actionType:'link'},
   {id:'google',name:'Google',sub:'Search · Gmail · YouTube',cat:'tech',priority:'high',deletions:498,bubbles:['data','war','pol','tax'],logo:'G',logoImg:'img/img-svg-3.svg',logoBg:'#f0fff4',logoCl:'#1a7a42',isSaaS:true,actionType:'gdpr'},
@@ -1585,6 +1595,9 @@ const companies=[
 ];
 
 const alternatives=[
+  // --- WOLT alternatives ---
+  {id:'a-hungry',name:'Hungry.dk',sub:'Madlevering',cat:'food',emoji:'🍽️',loc:'App/Web',zip:'all',desc:'Just Eats danske platform med bude ansat på overenskomst — timeløn, feriepenge og pension. Direkte alternativ til Wolt i København.',checks:['Overenskomst','Dansk platform','Timeløn'],replacesIds:['wolt']},
+  {id:'a-direkte',name:'Bestil direkte',sub:'Ring eller gå ind',cat:'food',emoji:'📞',loc:'Din by',zip:'all',desc:'De fleste restauranter tager imod bestillinger direkte per telefon eller via egen hjemmeside — pengene går til restauranten, ikke til en platform.',checks:['Ingen platform','Pengene til restauranten','Gratis'],replacesIds:['wolt']},
   // --- SOCIAL / TECH (platform alternatives) ---
   {id:'a-signal',name:'Signal',cat:'social',emoji:'💬',loc:'App',zip:'all',desc:'End-to-end encrypted messaging. No ads, no data selling, non-profit foundation.',checks:['Open source','Privacy-first','Non-profit']},
   {id:'a-element',name:'Element (Matrix)',cat:'social',emoji:'🔗',loc:'App/Web',zip:'all',desc:'Decentralised, federated messaging. No single company owns your chats.',checks:['Open source','Decentralised','No tracking']},
@@ -1623,11 +1636,11 @@ const events=[
 // PILE / GRAIN SIMULATION
 // ══════════════════════════════════════════
 const SCOPE_ORDER = ['you','city','dk'];
-const SCOPE_GRAIN_COUNT = {you:3, city:180, dk:420};
+const SCOPE_GRAIN_COUNT = {you:1, city:187, dk:312};
 const SCOPE_DATA = {
-  you:  {n:'3',     label:'grains dropped',     eur:'625 kr',  sub:'your yearly impact'},
-  city: {n:'1,247', label:'grains this week',    eur:'841.250 kr',  sub:'+312 this week'},
-  dk:   {n:'9,284', label:'grains this month',   eur:'6,27M kr',  sub:'+2.1k this week'},
+  you:  {n:'1',   label:'korn du har lagt'},
+  city: {n:'187', label:'korn i din by'},
+  dk:   {n:'312', label:'korn i Danmark'},
 };
 const GOAL_GRAINS = 280; // visual grain count representing the goal line
 
@@ -1814,8 +1827,6 @@ function setScope(k, el) {
   const d = SCOPE_DATA[k];
   document.getElementById('scope-n').textContent = d.n;
   document.getElementById('scope-label').textContent = d.label;
-  document.getElementById('scope-eur').textContent = d.eur;
-  document.getElementById('scope-sub').textContent = d.sub;
 
   const pct = k === 'you' ? '1%' : k === 'city' ? '28%' : '56%';
   const goal = k === 'dk' ? '9,000' : '4,500';
@@ -2064,22 +2075,62 @@ function openDossier(id) {
   document.getElementById('db-name').textContent = c.name;
   document.getElementById('db-sub').textContent = c.sub;
   document.getElementById('db-tags').innerHTML = c.bubbles.map(k=>{const b=bubbleMap[k];return b?`<span class="bubble ${b.cls}">${b.label}</span>`:''}).join('');
-  document.getElementById('db-days').textContent = '18 days left';
+  document.getElementById('db-days').textContent = '8 dage tilbage';
+
+  // Dynamically render WHAT WE FOUND from company.actions if available
+  if (c.actions && c.actions.length) {
+    const companyActions = c.actions.filter(a => !a.isOwnerAction);
+    const ownerActions = c.actions.filter(a => a.isOwnerAction);
+    const actionsCard = document.getElementById('db-actions-card');
+    if (actionsCard) {
+      actionsCard.innerHTML = companyActions.map((a, i) => {
+        const isLast = i === companyActions.length - 1;
+        const bubblesHtml = (a.bubbles||[]).map(k=>{const b=bubbleMap[k];return b?`<span class="bubble ${b.cls}" style="flex-shrink:0;margin:0;">${b.label}</span>`:''}).join('');
+        const domain = a.sourceUrl ? a.sourceUrl.replace(/https?:\/\/(www\.)?/,'').split('/')[0] : '';
+        return `<div style="padding:12px 15px;${isLast?'':'border-bottom:1px solid var(--border);'}position:relative;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">
+            <div class="mono" style="font-size:10px;color:var(--dim);">${a.date} · ${a.source}</div>
+            <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;">${bubblesHtml}</div>
+          </div>
+          <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:6px;">${a.text}</div>
+          ${a.sourceUrl ? `<a href="${a.sourceUrl}" target="_blank" class="mono" style="font-size:10px;color:var(--teal);text-decoration:none;">${domain} →</a>` : ''}
+        </div>`;
+      }).join('');
+    }
+    // Owner actions
+    const ownerSection = document.querySelector('#db-panel-0 .owner-actions-section');
+    const ownerCardEl = document.querySelector('#db-panel-0 .owner-actions-card');
+    if (ownerActions.length && ownerCardEl) {
+      ownerCardEl.innerHTML = ownerActions.map((a, i) => {
+        const isLast = i === ownerActions.length - 1;
+        const bubblesHtml = (a.bubbles||[]).map(k=>{const b=bubbleMap[k];return b?`<span class="bubble ${b.cls}" style="flex-shrink:0;margin:0;">${b.label}</span>`:''}).join('');
+        const domain = a.sourceUrl ? a.sourceUrl.replace(/https?:\/\/(www\.)?/,'').split('/')[0] : '';
+        return `<div style="padding:12px 15px;border-left:3px solid var(--amber);${isLast?'':'border-bottom:1px solid var(--border);'}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;">
+            <div class="mono" style="font-size:10px;color:var(--dim);">${a.ownerName ? a.ownerName.toUpperCase() + ' · ' : ''}${a.date}</div>
+            <div style="display:flex;gap:3px;">${bubblesHtml}</div>
+          </div>
+          <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:6px;">${a.text}</div>
+          ${a.sourceUrl ? `<a href="${a.sourceUrl}" target="_blank" class="mono" style="font-size:10px;color:var(--teal);text-decoration:none;">${domain} →</a>` : ''}
+        </div>`;
+      }).join('');
+      if (ownerSection) ownerSection.style.display = '';
+    } else if (ownerSection) {
+      ownerSection.style.display = ownerActions.length ? '' : 'none';
+    }
+  }
 
   // Populate challenges carousel
   const challEl = document.getElementById('db-challenges');
   if (challEl) renderChallengesInto(challEl, id);
 
-  // Populate migrate tab
+  // Populate migrate tab — prefer replacesIds match, fall back to category
   const altsEl = document.getElementById('db-panel-2');
   if (altsEl) {
-    const relAlts = alternatives.filter(a => a.cat === c.cat || a.cat === 'social').slice(0, 4);
-    altsEl.innerHTML = '<div style="padding:12px 14px;background:var(--teal-bg);border-radius:11px;border:1px solid var(--teal-border);margin-bottom:14px;">'
-      + '<div style="font-weight:600;font-size:13px;margin-bottom:5px;">Start before you leave</div>'
-      + '<div style="font-size:12px;color:var(--mid);line-height:1.8;">The hardest part of leaving a platform is the void. Use an alternative alongside what you\'re leaving for a week — so the switch feels like a drift rather than a jump.</div>'
-      + '</div>'
-      + '<div class="mono" style="font-size:10px;color:var(--dim);letter-spacing:.4px;margin-bottom:9px;">INDEPENDENT ALTERNATIVES · WE EARN NOTHING FROM THESE</div>'
-      + relAlts.map(a=>`<div onclick="openAltDetail('${a.id}')" style="background:var(--white);border:1px solid var(--border);border-radius:11px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;cursor:pointer;"><div style="font-size:24px;">${a.emoji}</div><div><div style="font-weight:600;font-size:13px;">${a.name}</div><div style="font-size:12px;color:var(--mid);margin-top:1px;">${a.desc}</div><div style="margin-top:5px;">${a.checks.map(ch=>'<span class="tag tag-teal" style="margin-right:2px;">'+ch+'</span>').join('')}</div></div></div>`).join('');
+    let relAlts = alternatives.filter(a => a.replacesIds && a.replacesIds.includes(c.id));
+    if (!relAlts.length) relAlts = alternatives.filter(a => a.cat === c.cat).slice(0, 4);
+    altsEl.innerHTML = '<div class="mono" style="font-size:10px;color:var(--dim);letter-spacing:.4px;margin-bottom:9px;">ALTERNATIVER · VI TJENER INTET PÅ DISSE</div>'
+      + relAlts.map(a=>`<div style="background:var(--white);border:1px solid var(--border);border-radius:11px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;"><div style="font-size:24px;">${a.emoji}</div><div><div style="font-weight:600;font-size:13px;">${a.name}</div><div style="font-size:11px;color:var(--dim);font-family:'Syne Mono',monospace;margin-bottom:3px;">${a.sub||''}</div><div style="font-size:12px;color:var(--mid);margin-top:1px;">${a.desc}</div><div style="margin-top:5px;">${a.checks.map(ch=>'<span class="tag tag-teal" style="margin-right:2px;">'+ch+'</span>').join('')}</div></div></div>`).join('');
   }
 
   // CTA btn
@@ -3275,60 +3326,46 @@ function openDossierForVote(id) {
   }, 50);
 }
 function renderNextBoycottCarousel() {
-  var el = document.getElementById('carousel-next-boycott'); if (!el) return;
-  var userVotes = getNextVotes();
-  var pool = companies.filter(function(co){ return co.id !== 'meta'; })
-    .sort(function(a,b){ return b.deletions - a.deletions; }).slice(0,5);
-  var topId = pool[0].id;
+  var el = document.getElementById('candidates-list'); if (!el) return;
+  var candidates = [
+    {id:'netto',     rank:1, votePct:42},
+    {id:'arla',      rank:2, votePct:35},
+    {id:'bestseller',rank:3, votePct:23},
+  ];
 
-  el.innerHTML = pool.map(function(co) {
-    var voted = userVotes[co.id];
-    var isTop = co.id === topId;
-    var isHoriz = ['amazon','google','pixelfed'].includes(co.id);
-    var voteCount = Math.round(co.deletions * 0.18);
+  el.innerHTML = candidates.map(function(c, i) {
+    var co = companies.find(function(x){ return x.id === c.id; }); if (!co) return '';
+    var isLast = i === candidates.length - 1;
+    var borderBottom = isLast ? '' : 'border-bottom:1px solid var(--border);';
+    var rankColors = ['var(--teal)','var(--mid)','var(--dim)'];
+    var rankColor = rankColors[i] || 'var(--dim)';
 
-    // Each bubble on its own line — no wrapping issues
-    var bubblesHtml = co.bubbles.slice(0,3).map(function(k) {
-      var bmap = {
-        'war':   {cls:'b-war',  label:'War funding'},
-        'pol':   {cls:'b-pol',  label:'Political funding'},
-        'data':  {cls:'b-data', label:'Data exploitation'},
-        'labor': {cls:'b-labor',label:'Labour violations'},
-        'env':   {cls:'b-env',  label:'Environmental damage'},
-        'tax':   {cls:'b-tax',  label:'Tax avoidance'},
-        'settle':{cls:'b-settle',label:'Settler economy'},
-        'mis':   {cls:'b-mis',  label:'Misinformation'},
-        'animal':{cls:'b-animal',label:'Animal welfare'},
-        'indig': {cls:'b-indig',label:'Indigenous rights'}
-      };
-      var b = bmap[k]; if (!b) return '';
-      return '<span class="bubble ' + b.cls + '" style="display:block;margin:2px 0;">' + b.label + '</span>';
+    var bubblesHtml = (co.bubbles||[]).slice(0,2).map(function(k){
+      var b = bubbleMap[k]; return b ? '<span class="bubble ' + b.cls + '" style="font-size:8px;padding:1px 5px;">' + b.label + '</span>' : '';
     }).join('');
 
     var logoHtml = co.logoImg
-      ? '<img src="' + co.logoImg + '" style="' + (isHoriz ? 'height:32px;width:auto;' : 'width:32px;height:32px;') + 'object-fit:contain;display:block;margin-bottom:10px;">'
-      : '<div class="co-logo" style="width:32px;height:32px;border-radius:7px;font-size:12px;background:' + co.logoBg + ';color:' + co.logoCl + ';margin-bottom:10px;">' + co.logo + '</div>';
+      ? '<img src="' + co.logoImg + '" style="width:32px;height:32px;object-fit:contain;border-radius:7px;border:1px solid var(--border);">'
+      : '<div style="width:32px;height:32px;border-radius:7px;background:' + co.logoBg + ';color:' + co.logoCl + ';display:flex;align-items:center;justify-content:center;font-family:\'Syne Mono\',monospace;font-size:11px;font-weight:700;flex-shrink:0;">' + co.logo + '</div>';
 
-    var borderLeft = isTop ? 'border-left:3px solid var(--teal);' : '';
-    var bg = isTop ? 'var(--teal-bg)' : 'var(--white)';
-    var border = voted ? 'var(--teal-border)' : (isTop ? 'var(--teal-border)' : 'var(--border)');
-
-    var topLabel = isTop
-      ? '<div style="font-family:\'Syne Mono\',monospace;font-size:8px;color:var(--teal);letter-spacing:.4px;margin-bottom:7px;">LEADING</div>'
-      : '';
-
-    var check = voted
-      ? '<div style="position:absolute;top:7px;right:7px;width:14px;height:14px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;"><svg width="8" height="8" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>'
-      : '';
-
-    return '<div onclick="openDossierForVote(\'' + co.id + '\')" style="flex-shrink:0;width:fit-content;background:' + bg + ';border:1px solid ' + border + ';' + borderLeft + 'border-radius:14px;padding:12px 12px 10px;cursor:pointer;position:relative;box-sizing:border-box;">' +
-      check +
-      topLabel +
-      logoHtml +
-      '<div style="margin-bottom:8px;">' + bubblesHtml + '</div>' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">' +
-        '<div style="font-family:\'Syne Mono\',monospace;font-size:9px;color:' + (voted ? 'var(--teal)' : 'var(--dim)') + ';">' + (voted ? 'voted' : 'vote') + '</div>' +
-        '<div style="font-family:\'Syne Mono\',monospace;font-size:9px;color:var(--dim);">' + voteCount + '</div>' +
+    return '<div onclick="openDossierForVote(\'' + co.id + '\')" style="padding:12px 14px;cursor:pointer;' + borderBottom + '">' +
+      '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<div style="font-family:\'Syne Mono\',monospace;font-size:11px;font-weight:700;color:' + rankColor + ';width:14px;flex-shrink:0;">#' + c.rank + '</div>' +
+        logoHtml +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:3px;">' +
+            '<div class="syne" style="font-size:14px;font-weight:800;">' + co.name + '</div>' +
+            '<div class="mono" style="font-size:8px;color:var(--dim);">' + (co.sub||'') + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;">' + bubblesHtml + '</div>' +
+          '<div style="font-size:11px;color:var(--mid);line-height:1.4;margin-bottom:7px;">' + (co.candidatePitch||'') + '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+            '<div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;">' +
+              '<div style="width:' + c.votePct + '%;height:100%;background:' + rankColor + ';border-radius:3px;"></div>' +
+            '</div>' +
+            '<div class="mono" style="font-size:9px;color:' + rankColor + ';font-weight:600;width:28px;flex-shrink:0;">' + c.votePct + '%</div>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }).join('');
