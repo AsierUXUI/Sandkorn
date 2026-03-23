@@ -2,39 +2,23 @@ import type { Boycott } from '@/types/boycott'
 
 export const boycotts: Boycott[] = [
   {
-    id: 'boycott-meta-jan-2026',
-    companyId: 'meta',
-    startDate: '2026-01-01',
-    endDate: '2026-01-31',
-    goal: 4500,
-    grains: 9284,
-    cityGrains: 1247,
-    yourGrains: 3,
-    tagline: 'Stop med at fodre algoritmen',
-  },
-  {
-    id: 'boycott-amazon-feb-2026',
-    companyId: 'amazon',
-    startDate: '2026-02-01',
-    endDate: '2026-02-28',
-    goal: 3500,
-    grains: 6821,
-    cityGrains: 934,
-    yourGrains: 2,
-    tagline: 'Køb lokalt, tænk globalt',
-  },
-  {
-    id: 'boycott-google-mar-2026',
-    companyId: 'google',
+    id: 'boycott-wolt-mar-2026',
+    companyId: 'wolt',
     startDate: '2026-03-01',
     endDate: '2026-03-31',
-    goal: 4000,
-    grains: 3102,
-    cityGrains: 412,
+    goal: 2000,
+    grains: 312,
+    cityGrains: 187,
     yourGrains: 1,
-    tagline: 'Tag din data tilbage',
+    tagline: 'Din levering koster mere end du tror',
   },
 ]
+
+/**
+ * The three companies proposed as candidates for next month's boycott.
+ * Users will eventually vote on these — for now it's static.
+ */
+export const nextBoycottCandidates = ['netto', 'arla', 'bestseller']
 
 /** Returns the boycott active on a given date (defaults to today). */
 export function getActiveBoycott(date = new Date()): Boycott | undefined {

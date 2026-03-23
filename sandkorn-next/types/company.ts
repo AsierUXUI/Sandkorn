@@ -31,6 +31,7 @@ export interface Company {
   isActiveBoycott?: boolean
   daysLeft?: number
   actions?: CompanyAction[]
+  candidatePitch?: string  // one-liner shown on the "Vælg næste bojkot" card
 }
 
 export const BUBBLE_MAP: Record<BubbleKey, { cls: string; label: string }> = {
