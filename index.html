@@ -251,7 +251,7 @@ textarea.input{min-height:80px;resize:none}
             <div style="width:5px;height:5px;border-radius:50%;background:#e05050;"></div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <div class="mono" style="font-size:9px;color:var(--teal);font-weight:600;">8 dage tilbage</div>
+            <div class="mono" style="font-size:9px;color:var(--teal);font-weight:600;">8 days left</div>
             <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg);">
               <button id="stab-you" onclick="event.stopPropagation();setScope('you',this)" style="flex:none;padding:4px 9px;border:none;background:none;cursor:pointer;font-family:'Syne Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:.3px;transition:all .15s;">YOU</button>
               <button id="stab-city" onclick="event.stopPropagation();setScope('city',this)" style="flex:none;padding:4px 9px;border:none;background:var(--text);cursor:pointer;font-family:'Syne Mono',monospace;font-size:9px;color:white;letter-spacing:.3px;transition:all .15s;">CPH</button>
@@ -542,19 +542,55 @@ textarea.input{min-height:80px;resize:none}
     </div>
   </div>
 
-  <!-- TABS -->
-  <div class="dossier-tabs" id="db-tabs-bar">
-    <button class="dossier-tab active" onclick="switchDossierTab('boycott',0,this)">WHAT WE FOUND</button>
-    <button class="dossier-tab" onclick="switchDossierTab('boycott',1,this)">WHO OWNS IT</button>
-    <button class="dossier-tab" onclick="switchDossierTab('boycott',2,this)">MIGRATE</button>
-    <button class="dossier-tab" id="db-tab-journey-btn" onclick="switchDossierTab('boycott',3,this)">JOURNEY</button>
+  <!-- HUB: scrollable main content -->
+  <div style="overflow-y:auto;flex:1;padding:16px 16px 24px;">
+
+    <!-- Journey CTA card — primary action -->
+    <div id="db-hub-journey-card" onclick="openJourneyScreen(window._currentDossierId||'meta')" style="background:var(--teal);border-radius:18px;padding:16px 18px;margin-bottom:12px;cursor:pointer;position:relative;overflow:hidden;">
+      <div style="position:absolute;right:-12px;top:-12px;font-size:72px;opacity:.12;line-height:1;">🌾</div>
+      <div class="mono" style="font-size:9px;color:rgba(255,255,255,.7);letter-spacing:1px;margin-bottom:6px;">YOUR BOYCOTT JOURNEY</div>
+      <div class="syne" style="font-size:17px;font-weight:800;color:white;margin-bottom:10px;" id="db-hub-journey-title">Step 1 of 5</div>
+      <!-- Mini path preview -->
+      <div id="db-hub-journey-path" style="display:flex;align-items:center;gap:6px;margin-bottom:12px;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:12px;color:rgba(255,255,255,.85);" id="db-hub-journey-next"></div>
+        <div style="font-size:12px;color:white;font-weight:600;">Continue →</div>
+      </div>
+    </div>
+
+    <!-- Secondary nav rows -->
+    <div style="background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px;">
+      <button onclick="openFindingsScreen(window._currentDossierId||'meta')" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">🔍</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;">What we found</div>
+            <div style="font-size:11px;color:var(--dim);margin-top:1px;" id="db-hub-actions-count">Sources &amp; evidence</div>
+          </div>
+        </div>
+        <span style="color:var(--dim);font-size:16px;">›</span>
+      </button>
+      <button onclick="openOwnershipScreen(window._currentDossierId||'meta')" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:none;border:none;cursor:pointer;text-align:left;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">🏢</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;">Who owns this</div>
+            <div style="font-size:11px;color:var(--dim);margin-top:1px;">Ownership &amp; structure</div>
+          </div>
+        </div>
+        <span style="color:var(--dim);font-size:16px;">›</span>
+      </button>
+    </div>
+
+    <!-- Alternatives carousel -->
+    <div class="mono" style="font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:8px;">ALTERNATIVES · WE EARN NOTHING FROM THESE</div>
+    <div id="db-hub-alternatives" style="display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px;"></div>
+
   </div>
 
-  <!-- Scrollable content -->
-  <div style="overflow-y:auto;flex:1;">
-
-    <!-- TAB 0: What we found -->
-    <div class="dossier-tab-panel active" id="db-panel-0">
+  <!-- HIDDEN: legacy panels kept for renderChallenges + ownership tree targets -->
+  <div style="display:none;">
+    <div id="db-panel-0">
       <div class="mono" style="font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:8px;">COMPANY ACTIONS</div>
       <div class="card" style="overflow:hidden;margin-bottom:10px;" id="db-actions-card">
         <div class="action-entry" data-id="a1" style="padding:12px 15px;border-bottom:1px solid var(--border);position:relative;">
@@ -685,6 +721,67 @@ textarea.input{min-height:80px;resize:none}
       <svg viewBox="0 0 28 28" width="20" height="20" fill="none"><circle cx="14" cy="8" r="3.8" fill="var(--sand)"/><circle cx="8" cy="19" r="3" fill="var(--sand2)"/><circle cx="20" cy="19" r="3" fill="var(--sand2)"/><circle cx="14" cy="25" r="2.3" fill="var(--dimmer)"/><line x1="14" y1="11.8" x2="9" y2="16.2" stroke="var(--dimmer)" stroke-width="1.1"/><line x1="14" y1="11.8" x2="19" y2="16.2" stroke="var(--dimmer)" stroke-width="1.1"/><line x1="9" y1="22.1" x2="12.3" y2="23.2" stroke="var(--dimmer)" stroke-width="1.1"/><line x1="20" y1="22.1" x2="16.7" y2="23.2" stroke="var(--dimmer)" stroke-width="1.1"/></svg>
     </button>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- FINDINGS SCREEN (nested from dossier hub)          -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-dossier-findings">
+  <div class="topbar" style="border-bottom:1px solid var(--border);">
+    <button class="back-btn" onclick="navBack()">← back</button>
+    <span id="sf-name" class="syne" style="font-size:14px;font-weight:700;"></span>
+    <span></span>
+  </div>
+  <div style="overflow-y:auto;flex:1;padding:16px;">
+    <div class="mono" style="font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:8px;">COMPANY ACTIONS</div>
+    <div class="card" style="overflow:hidden;margin-bottom:10px;" id="sf-actions-card"></div>
+    <div class="mono sf-owner-section" style="font-size:10px;color:var(--amber);letter-spacing:1px;margin-bottom:6px;">OWNER ACTIONS</div>
+    <div class="card sf-owner-card" style="overflow:hidden;margin-bottom:14px;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div class="mono" style="font-size:10px;color:var(--teal);letter-spacing:1px;">OPEN CHALLENGES</div>
+      <button onclick="openChallengeModal(null,null)" style="font-family:'Syne Mono',monospace;font-size:10px;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-border);border-radius:6px;padding:3px 9px;cursor:pointer;">+ Post challenge</button>
+    </div>
+    <div style="font-size:12px;color:var(--dim);margin-bottom:10px;line-height:1.5;">Community members disputing entries. Source-backed. Moderated.</div>
+    <div id="sf-challenges" style="overflow-x:auto;display:flex;gap:10px;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- OWNERSHIP SCREEN (nested from dossier hub)         -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-dossier-ownership">
+  <div class="topbar" style="border-bottom:1px solid var(--border);">
+    <button class="back-btn" onclick="navBack()">← back</button>
+    <span id="so-name" class="syne" style="font-size:14px;font-weight:700;"></span>
+    <span></span>
+  </div>
+  <div style="overflow-y:auto;flex:1;padding:16px;">
+    <div class="mono" style="font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:10px;">WHO OWNS THIS</div>
+    <div style="border-radius:13px;overflow:hidden;border:1px solid var(--border);background:var(--white);position:relative;margin-bottom:12px;">
+      <canvas id="tree-canvas-so" width="390" height="400" style="display:block;cursor:grab;touch-action:none;"></canvas>
+      <div style="position:absolute;bottom:9px;right:9px;display:flex;gap:5px;">
+        <button onclick="soZ(1.25)" style="width:28px;height:28px;border-radius:7px;background:var(--white);border:1px solid var(--border);font-size:14px;cursor:pointer;">+</button>
+        <button onclick="soZ(.8)"   style="width:28px;height:28px;border-radius:7px;background:var(--white);border:1px solid var(--border);font-size:14px;cursor:pointer;">−</button>
+        <button onclick="soRst()"   style="width:28px;height:28px;border-radius:7px;background:var(--white);border:1px solid var(--border);font-size:10px;cursor:pointer;font-family:'Syne Mono',monospace;">↺</button>
+      </div>
+    </div>
+    <div id="so-tt" style="display:none;padding:11px 13px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div id="so-tt-name" style="font-weight:600;font-size:13px;margin-bottom:3px;"></div>
+      <div id="so-tt-detail" class="mono" style="font-size:11px;color:var(--mid);line-height:1.5;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- JOURNEY SCREEN (nested from dossier hub)           -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-dossier-journey">
+  <div class="topbar" style="border-bottom:1px solid var(--border);">
+    <button class="back-btn" onclick="navBack()">← back</button>
+    <span id="sj-title" class="syne" style="font-size:14px;font-weight:700;">Boycott Journey</span>
+    <span id="sj-badge" class="mono" style="font-size:9px;background:var(--teal);color:white;border-radius:9px;padding:2px 7px;"></span>
+  </div>
+  <div id="sj-root" style="overflow-y:auto;flex:1;padding:20px 14px 60px;"></div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════ -->
@@ -2328,90 +2425,115 @@ function fillLogoBox(el, c) {
 // ══════════════════════════════════════════
 function openDossier(id) {
   const c = companies.find(x=>x.id===id)||companies[0];
-  window._dossierFrom = window._dossierFrom || 'screen-browse-company';
+  window._currentDossierId = c.id;
 
   // Fill header
   fillLogoBox(document.getElementById('db-logo'), c);
   document.getElementById('db-name').textContent = c.name;
   document.getElementById('db-sub').textContent = c.sub;
   document.getElementById('db-tags').innerHTML = c.bubbles.map(k=>{const b=bubbleMap[k];return b?`<span class="bubble ${b.cls}">${b.label}</span>`:''}).join('');
-  document.getElementById('db-days').textContent = '8 dage tilbage';
+  document.getElementById('db-days').textContent = '8 days left';
 
-  // Dynamically render WHAT WE FOUND from company.actions if available
-  if (c.actions && c.actions.length) {
-    const companyActions = c.actions.filter(a => !a.isOwnerAction);
-    const ownerActions = c.actions.filter(a => a.isOwnerAction);
-    const actionsCard = document.getElementById('db-actions-card');
-    if (actionsCard) {
-      actionsCard.innerHTML = companyActions.map((a, i) => {
-        const isLast = i === companyActions.length - 1;
-        const bubblesHtml = (a.bubbles||[]).map(k=>{const b=bubbleMap[k];return b?`<span class="bubble ${b.cls}" style="flex-shrink:0;margin:0;">${b.label}</span>`:''}).join('');
-        const domain = a.sourceUrl ? a.sourceUrl.replace(/https?:\/\/(www\.)?/,'').split('/')[0] : '';
-        return `<div style="padding:12px 15px;${isLast?'':'border-bottom:1px solid var(--border);'}position:relative;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">
-            <div class="mono" style="font-size:10px;color:var(--dim);">${a.date} · ${a.source}</div>
-            <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;">${bubblesHtml}</div>
-          </div>
-          <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:6px;">${a.text}</div>
-          ${a.sourceUrl ? `<a href="${a.sourceUrl}" target="_blank" class="mono" style="font-size:10px;color:var(--teal);text-decoration:none;">${domain} →</a>` : ''}
-        </div>`;
-      }).join('');
-    }
-    // Owner actions
-    const ownerSection = document.querySelector('#db-panel-0 .owner-actions-section');
-    const ownerCardEl = document.querySelector('#db-panel-0 .owner-actions-card');
-    if (ownerActions.length && ownerCardEl) {
-      ownerCardEl.innerHTML = ownerActions.map((a, i) => {
-        const isLast = i === ownerActions.length - 1;
-        const bubblesHtml = (a.bubbles||[]).map(k=>{const b=bubbleMap[k];return b?`<span class="bubble ${b.cls}" style="flex-shrink:0;margin:0;">${b.label}</span>`:''}).join('');
-        const domain = a.sourceUrl ? a.sourceUrl.replace(/https?:\/\/(www\.)?/,'').split('/')[0] : '';
-        return `<div style="padding:12px 15px;border-left:3px solid var(--amber);${isLast?'':'border-bottom:1px solid var(--border);'}">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;">
-            <div class="mono" style="font-size:10px;color:var(--dim);">${a.ownerName ? a.ownerName.toUpperCase() + ' · ' : ''}${a.date}</div>
-            <div style="display:flex;gap:3px;">${bubblesHtml}</div>
-          </div>
-          <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:6px;">${a.text}</div>
-          ${a.sourceUrl ? `<a href="${a.sourceUrl}" target="_blank" class="mono" style="font-size:10px;color:var(--teal);text-decoration:none;">${domain} →</a>` : ''}
-        </div>`;
-      }).join('');
-      if (ownerSection) ownerSection.style.display = '';
-    } else if (ownerSection) {
-      ownerSection.style.display = ownerActions.length ? '' : 'none';
-    }
-  }
+  // Populate hidden legacy panels (needed for renderChallengesInto + legacy refs)
+  _populateFindingsPanels(c, '#db-panel-0 ', 'db-actions-card', '#db-panel-0 .owner-actions-section', '#db-panel-0 .owner-actions-card', 'db-challenges');
 
-  // Populate challenges carousel
-  const challEl = document.getElementById('db-challenges');
-  if (challEl) renderChallengesInto(challEl, id);
-
-  // Populate migrate tab — prefer replacesIds match, fall back to category
-  const altsEl = document.getElementById('db-panel-2');
+  // Hub: alternatives carousel
+  const altsEl = document.getElementById('db-hub-alternatives');
   if (altsEl) {
     let relAlts = alternatives.filter(a => a.replacesIds && a.replacesIds.includes(c.id));
-    if (!relAlts.length) relAlts = alternatives.filter(a => a.cat === c.cat).slice(0, 4);
-    altsEl.innerHTML = '<div class="mono" style="font-size:10px;color:var(--dim);letter-spacing:.4px;margin-bottom:9px;">ALTERNATIVER · VI TJENER INTET PÅ DISSE</div>'
-      + relAlts.map(a=>`<div style="background:var(--white);border:1px solid var(--border);border-radius:11px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;"><div style="font-size:24px;">${a.emoji}</div><div><div style="font-weight:600;font-size:13px;">${a.name}</div><div style="font-size:11px;color:var(--dim);font-family:'Syne Mono',monospace;margin-bottom:3px;">${a.sub||''}</div><div style="font-size:12px;color:var(--mid);margin-top:1px;">${a.desc}</div><div style="margin-top:5px;">${a.checks.map(ch=>'<span class="tag tag-teal" style="margin-right:2px;">'+ch+'</span>').join('')}</div></div></div>`).join('');
+    if (!relAlts.length) relAlts = alternatives.filter(a => a.cat === c.cat).slice(0, 5);
+    altsEl.innerHTML = relAlts.map(a=>`<div style="flex-shrink:0;width:160px;background:white;border:1px solid var(--border);border-radius:13px;padding:12px 13px;">
+      <div style="font-size:26px;margin-bottom:6px;">${a.emoji}</div>
+      <div style="font-weight:600;font-size:13px;margin-bottom:2px;">${a.name}</div>
+      <div style="font-size:11px;color:var(--dim);margin-bottom:6px;">${a.sub||''}</div>
+      <div style="font-size:11px;color:var(--mid);line-height:1.5;margin-bottom:8px;">${a.desc}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px;">${(a.checks||[]).map(ch=>'<span class="tag tag-teal">'+ch+'</span>').join('')}</div>
+    </div>`).join('');
   }
 
   // CTA btn
   const ctaBtn = document.getElementById('db-cta-btn');
   if (ctaBtn) {
     if (isCommitted(c.id)) {
-      ctaBtn.textContent = 'Din rejse →';
-      ctaBtn.onclick = () => switchDossierTabTo('boycott', 3);
+      ctaBtn.textContent = 'Your journey →';
+      ctaBtn.onclick = () => openJourneyScreen(c.id);
     } else {
       ctaBtn.textContent = 'Start Boycott 🌾';
       ctaBtn.onclick = () => openBoycottTutorial(c.id);
     }
   }
 
-  // Journey tab
+  // Hub journey card
   checkSettleMilestones(c.id);
-  renderJourneyTab(c.id);
+  updateDossierHub(c.id);
 
-  // Already committed → open on Journey tab; otherwise start at What We Found
-  switchDossierTabTo('boycott', isCommitted(c.id) ? 3 : 0);
   showScreen('screen-dossier-boycott');
+}
+
+// ── Shared helper: populate findings panels ─────────────────────────────────
+function _buildActionHtml(a, isLast) {
+  const bubblesHtml = (a.bubbles||[]).map(k=>{const b=bubbleMap[k];return b?`<span class="bubble ${b.cls}" style="flex-shrink:0;margin:0;">${b.label}</span>`:''}).join('');
+  const domain = a.sourceUrl ? a.sourceUrl.replace(/https?:\/\/(www\.)?/,'').split('/')[0] : '';
+  return `<div style="padding:12px 15px;${isLast?'':'border-bottom:1px solid var(--border);'}">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">
+      <div class="mono" style="font-size:10px;color:var(--dim);">${a.date} · ${a.source}</div>
+      <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;">${bubblesHtml}</div>
+    </div>
+    <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:6px;">${a.text}</div>
+    ${a.sourceUrl ? `<a href="${a.sourceUrl}" target="_blank" class="mono" style="font-size:10px;color:var(--teal);text-decoration:none;">${domain} →</a>` : ''}
+  </div>`;
+}
+
+function _populateFindingsPanels(c, _unused, actionsCardId, ownerSectionSel, ownerCardSel, challId) {
+  if (!c.actions || !c.actions.length) return;
+  const companyActions = c.actions.filter(a => !a.isOwnerAction);
+  const ownerActions   = c.actions.filter(a => a.isOwnerAction);
+  const actCard = document.getElementById(actionsCardId);
+  if (actCard) actCard.innerHTML = companyActions.map((a,i)=>_buildActionHtml(a, i===companyActions.length-1)).join('');
+  const ownerSection = document.querySelector(ownerSectionSel);
+  const ownerCard    = document.querySelector(ownerCardSel);
+  if (ownerActions.length && ownerCard) {
+    ownerCard.innerHTML = ownerActions.map((a,i)=>{
+      const bubblesHtml = (a.bubbles||[]).map(k=>{const b=bubbleMap[k];return b?`<span class="bubble ${b.cls}" style="flex-shrink:0;margin:0;">${b.label}</span>`:''}).join('');
+      const domain = a.sourceUrl ? a.sourceUrl.replace(/https?:\/\/(www\.)?/,'').split('/')[0] : '';
+      const isLast = i===ownerActions.length-1;
+      return `<div style="padding:12px 15px;border-left:3px solid var(--amber);${isLast?'':'border-bottom:1px solid var(--border);'}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;">
+          <div class="mono" style="font-size:10px;color:var(--dim);">${a.ownerName?a.ownerName.toUpperCase()+' · ':''}${a.date}</div>
+          <div style="display:flex;gap:3px;">${bubblesHtml}</div>
+        </div>
+        <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:6px;">${a.text}</div>
+        ${a.sourceUrl?`<a href="${a.sourceUrl}" target="_blank" class="mono" style="font-size:10px;color:var(--teal);text-decoration:none;">${domain} →</a>`:''}
+      </div>`;
+    }).join('');
+    if (ownerSection) ownerSection.style.display = '';
+  } else if (ownerSection) {
+    ownerSection.style.display = 'none';
+  }
+  const challEl = document.getElementById(challId);
+  if (challEl) renderChallengesInto(challEl, c.id);
+}
+
+// ── Nested screen openers ───────────────────────────────────────────────────
+function openFindingsScreen(id) {
+  const c = companies.find(x=>x.id===id); if (!c) return;
+  document.getElementById('sf-name').textContent = c.name;
+  _populateFindingsPanels(c, '', 'sf-actions-card', '#screen-dossier-findings .sf-owner-section', '#screen-dossier-findings .sf-owner-card', 'sf-challenges');
+  showScreen('screen-dossier-findings');
+}
+
+function openOwnershipScreen(id) {
+  const c = companies.find(x=>x.id===id); if (!c) return;
+  document.getElementById('so-name').textContent = c.name;
+  showScreen('screen-dossier-ownership');
+  setTimeout(soDrawTree, 60);
+}
+
+function openJourneyScreen(id) {
+  const c = companies.find(x=>x.id===id); if (!c) return;
+  document.getElementById('sj-title').textContent = c.name;
+  renderJourneyScreen(id);
+  showScreen('screen-dossier-journey');
 }
 
 // ══════════════════════════════════════════
@@ -2920,6 +3042,41 @@ function drawTree(){
 }
 function tZ(f){tS=Math.min(2.5,Math.max(.35,tS*f));if(tRender)tRender();}
 function tRst(){tS=1;tX=0;tY=0;document.getElementById('tree-tt').style.display='none';if(tRender)tRender();}
+
+// ── Ownership screen tree (mirrors drawTree but targets tree-canvas-so) ─────
+let soS=1,soX=0,soY=0,soDrag=false,soDS={x:0,y:0},soOS={x:0,y:0},soLast=null,soRender=null;
+function soDrawTree(){
+  const cv=document.getElementById('tree-canvas-so');if(!cv)return;
+  const ctx=cv.getContext('2d');cv.width=cv.parentElement.offsetWidth-2||380;
+  let soPos={};
+  function bP(node,x,y){const W=86,H=36,HG=96,VG=48;soPos[node.id]={x,y,w:W,h:H,node};const ch=node.children||[];ch.forEach((c,i)=>{const cx=ch.length===1?x:x-(ch.length-1)*HG/2+i*HG;bP(c,cx,y+H+VG);});}
+  bP(tData,cv.width/2,18);
+  soRender=function(){
+    ctx.clearRect(0,0,cv.width,cv.height);ctx.save();ctx.translate(soX,soY);ctx.scale(soS,soS);
+    ctx.strokeStyle='#ddd';ctx.lineWidth=1.5;
+    Object.values(soPos).forEach(p=>{(p.node.children||[]).forEach(c=>{const cp=soPos[c.id];if(!cp)return;ctx.beginPath();ctx.moveTo(p.x,p.y+p.h);ctx.bezierCurveTo(p.x,p.y+p.h+13,cp.x,cp.y-13,cp.x,cp.y);ctx.stroke();});});
+    Object.values(soPos).forEach(({x,y,w,h,node})=>{
+      const rx=x-w/2;
+      function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();}
+      if(node.pri==='high'){ctx.strokeStyle='#c05010';ctx.lineWidth=1.5;rr(ctx,rx-2,y-2,w+4,h+4,8);ctx.stroke();}
+      ctx.fillStyle=node.color;rr(ctx,rx,y,w,h,7);ctx.fill();
+      ctx.fillStyle=node.tc;ctx.font="600 10px 'Outfit',sans-serif";ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(node.label,x,y+h*.38,w-8);
+      ctx.fillStyle=node.tc==='#fff'?'rgba(255,255,255,.45)':'rgba(0,0,0,.35)';ctx.font="8px 'Syne Mono',monospace";ctx.fillText(node.sub,x,y+h*.72,w-8);
+    });
+    ctx.restore();
+  };
+  soRender();
+  function nAt(ex,ey){const cx=(ex-soX)/soS,cy=(ey-soY)/soS;for(const[id,p]of Object.entries(soPos))if(cx>=p.x-p.w/2&&cx<=p.x+p.w/2&&cy>=p.y&&cy<=p.y+p.h)return id;return null;}
+  cv.onmousedown=e=>{soDrag=true;soDS={x:e.clientX,y:e.clientY};soOS={x:soX,y:soY};};
+  cv.onmousemove=e=>{if(!soDrag)return;soX=soOS.x+(e.clientX-soDS.x);soY=soOS.y+(e.clientY-soDS.y);soRender();};
+  cv.onmouseup=e=>{if(Math.abs(e.clientX-soDS.x)<5&&Math.abs(e.clientY-soDS.y)<5){const r=cv.getBoundingClientRect(),id=nAt(e.clientX-r.left,e.clientY-r.top);if(id&&tNodes[id]){document.getElementById('so-tt-name').textContent=tNodes[id].name;document.getElementById('so-tt-detail').textContent=tNodes[id].detail;document.getElementById('so-tt').style.display='block';}}soDrag=false;};
+  cv.onmouseleave=()=>soDrag=false;
+  cv.ontouchstart=e=>{e.preventDefault();soDrag=true;soDS={x:e.touches[0].clientX,y:e.touches[0].clientY};soOS={x:soX,y:soY};soLast={x:e.touches[0].clientX,y:e.touches[0].clientY};};
+  cv.ontouchmove=e=>{e.preventDefault();soX=soOS.x+(e.touches[0].clientX-soDS.x);soY=soOS.y+(e.touches[0].clientY-soDS.y);soRender();};
+  cv.ontouchend=e=>{const t=e.changedTouches[0];if(soLast&&Math.abs(t.clientX-soLast.x)<8&&Math.abs(t.clientY-soLast.y)<8){const r=cv.getBoundingClientRect(),id=nAt(t.clientX-r.left,t.clientY-r.top);if(id&&tNodes[id]){document.getElementById('so-tt-name').textContent=tNodes[id].name;document.getElementById('so-tt-detail').textContent=tNodes[id].detail;document.getElementById('so-tt').style.display='block';}}soDrag=false;};
+}
+function soZ(f){soS=Math.min(2.5,Math.max(.35,soS*f));if(soRender)soRender();}
+function soRst(){soS=1;soX=0;soY=0;document.getElementById('so-tt').style.display='none';if(soRender)soRender();}
 
 // ══════════════════════════════════════════
 // DONATE
@@ -3496,60 +3653,74 @@ function setCommitted(id, val) {
 var JOURNEY_PHASES = [
   {
     key: 'grain',
-    label: 'FASE 1',
-    title: 'Drop dit korn',
+    label: 'STEP 1',
+    week: 'Day 0',
+    title: 'You\'re in',
     icon: '🌾',
-    desc: 'Du har sagt det højt. Det er det sværeste. At forpligte sig — også selvom systemet er designet til at gøre det nemt at blive.',
+    desc: 'You committed. That\'s the hardest part. Systems are designed to make staying easy — you just made leaving real.',
     actionLabel: null, // auto-complete on commit
     actionFn: null
   },
   {
     key: 'cut',
-    label: 'FASE 2',
-    title: 'Klip tråden',
+    label: 'STEP 2',
+    week: 'This week',
+    title: 'Delete the app',
     icon: '✂️',
-    desc: 'Slet din konto. Afmeld dit abonnement. Det tager 10 minutter — og det er præcis det, de satser på, at du aldrig finder.',
-    actionLabel: 'Start sletteguide →',
+    desc: 'Remove it from your device. It takes 10 minutes — and that\'s exactly what they\'re counting on you never finding.',
+    actionLabel: 'Start deletion guide →',
     actionFn: function(id) { closeModal('modal-journey-phase'); openBoycottTutorial(id); }
   },
   {
-    key: 'clean',
-    label: 'FASE 3',
-    title: 'Ryd dine data',
-    icon: '📄',
-    desc: 'En GDPR-anmodning tvinger dem til at slette alt — annonceprofil, skyggeprofil, delte data. De skal svare inden 30 dage.',
-    actionLabel: 'Generer GDPR-mail →',
-    actionFn: function(id) { closeModal('modal-journey-phase'); showScreen('screen-gdpr-draft'); }
+    key: 'discover',
+    label: 'STEP 3',
+    week: 'Week 1–2',
+    title: 'Try the alternative',
+    icon: '🔄',
+    desc: 'The alternatives exist and they\'re good. Try one this week. Different isn\'t worse — it\'s just new.',
+    actionLabel: 'See alternatives →',
+    actionFn: function(id) { closeModal('modal-journey-phase'); navBack(); }
   },
   {
     key: 'settle',
-    label: 'FASE 4',
-    title: 'Bliv i det',
+    label: 'STEP 4',
+    week: 'Week 4',
+    title: 'Hold the line',
     icon: '🌱',
-    desc: 'De første 30 dage er de sværeste. Alternativerne er der — de er bare anderledes. Hvert korn du lægger, giver nye vaner rod.',
+    desc: 'The first 30 days are the hardest. Each day you stay, the habit builds and the old pull weakens.',
     actionLabel: null, // auto after 30d
     actionFn: null
   },
   {
-    key: 'spread',
-    label: 'FASE 5',
-    title: 'Tag nogen med',
-    icon: '🤝',
-    desc: 'Kollektiv boykot kræver kollektiv handling. Én person, der fortæller to andre, ændrer matematikken fuldstændigt.',
-    actionLabel: 'Inviter nogen →',
-    actionFn: function(id) { closeModal('modal-journey-phase'); completePhase(id, 'spread'); openModal('modal-invite'); }
+    key: 'clean',
+    label: 'STEP 5',
+    week: 'When ready',
+    title: 'Wipe your data',
+    icon: '📄',
+    desc: 'A GDPR request forces them to erase your ad profile, shadow profile, and everything shared — they must respond within 30 days.',
+    actionLabel: 'Generate GDPR email →',
+    actionFn: function(id) { closeModal('modal-journey-phase'); showScreen('screen-gdpr-draft'); }
   }
 ];
+
+// Social proof counts per step (mock — swap for Supabase later)
+var JOURNEY_MOCK_COUNTS = {
+  grain:   12400,
+  cut:      8300,
+  discover: 4600,
+  settle:   1900,
+  clean:     720
+};
 
 // Per-company phase overrides (replace default phases for specific companies)
 var JOURNEY_OVERRIDES = {
   wolt: {
-    clean: {
-      title: 'Prøv alternativet',
+    discover: {
+      title: 'Try the alternative',
       icon: '🍽️',
-      desc: 'Hungry.dk ansætter bude på overenskomst. De fleste restauranter tager også direkte bestillinger — pengene går til dem, ikke til en platform.',
-      actionLabel: 'Se alternativer →',
-      actionFn: function(id) { closeModal('modal-journey-phase'); switchDossierTabTo('boycott', 2); }
+      desc: 'Hungry.dk employs couriers on union contracts. Most restaurants take direct orders too — money goes to them, not to a platform.',
+      actionLabel: 'See alternatives →',
+      actionFn: function(id) { closeModal('modal-journey-phase'); navBack(); }
     }
   }
 };
@@ -3578,7 +3749,7 @@ function completePhase(id, key) {
     saveJourney(id, j);
     // Show micro-toast
     var phaseData = JOURNEY_PHASES.find(function(p) { return p.key === key; });
-    if (phaseData) showToast(phaseData.icon + ' ' + phaseData.title + ' — fuldført');
+    if (phaseData) showToast(phaseData.icon + ' ' + phaseData.title + ' — completed');
     // Re-render if dossier is open for this company
     renderJourneyTab(id);
   }
@@ -3598,11 +3769,11 @@ function checkSettleMilestones(id) {
   if (days >= 30 && !j.phases.settle.completedAt) {
     j.phases.settle.completedAt = Date.now();
     saveJourney(id, j);
-    showToast('🌱 30 dage uden — du er nået til fase 4!');
+    showToast('🌱 30 days without — you\'ve reached step 4!');
   }
   // Streak milestone toasts (only once each, tracked in journey)
   j.milestones = j.milestones || {};
-  var milestones = [{d:7,msg:'🌾 En uge inde. Det er rigtigt.'}];
+  var milestones = [{d:7,msg:'🌾 One week in. This is real.'}];
   milestones.forEach(function(m) {
     if (days >= m.d && !j.milestones['d'+m.d]) {
       j.milestones['d'+m.d] = true;
@@ -3621,112 +3792,194 @@ function getActivePhaseKey(id) {
   return null; // all done
 }
 
-function renderJourneyTab(id) {
-  var root = document.getElementById('db-journey-root');
+// ── Journey screen: winding gamified path ──────────────────────────────────
+function renderJourneyScreen(id) {
+  var root = document.getElementById('sj-root');
   if (!root) return;
   var j = getJourney(id);
   var overrides = JOURNEY_OVERRIDES[id] || {};
   var activeKey = getActivePhaseKey(id);
   var days = getDaysWithout(id);
+  var total = JOURNEY_PHASES.length;
+  var doneCount = JOURNEY_PHASES.filter(function(p) { return j.phases[p.key] && j.phases[p.key].completedAt; }).length;
 
-  var html = '<div style="padding:2px 0 0;">';
+  // Render in REVERSE order: step 5 at top (goal), step 1 at bottom (start)
+  var reversed = JOURNEY_PHASES.slice().reverse();
+  var html = '';
 
-  JOURNEY_PHASES.forEach(function(pBase, idx) {
+  reversed.forEach(function(pBase, revIdx) {
+    var idx = total - 1 - revIdx; // original index: 0=step1 … 4=step5
     var p = Object.assign({}, pBase, overrides[pBase.key] || {});
     var phaseData = j.phases[p.key] || { completedAt: null };
     var isDone    = !!phaseData.completedAt;
     var isActive  = p.key === activeKey;
-    var isPending = !isDone && !isActive;
+    var isRight   = (idx % 2 === 0); // steps 1,3,5 right; steps 2,4 left
 
-    // Node color / style
-    var nodeStyle = isDone
-      ? 'background:var(--teal);border:2px solid var(--teal);'
-      : isActive
-        ? 'background:white;border:2.5px solid var(--teal);animation:journeyPulse 1.8s ease-in-out infinite;'
-        : 'background:var(--border);border:2px solid var(--border2);';
+    var count = JOURNEY_MOCK_COUNTS[p.key] || 0;
+    var countLabel = count >= 1000 ? (count / 1000).toFixed(1).replace('.0', '') + 'k' : count;
 
-    // Connector line (not shown for last item)
-    var lineHtml = idx < JOURNEY_PHASES.length - 1
-      ? '<div style="width:2px;height:22px;margin-left:11px;background:' + (isDone ? 'var(--teal)' : 'var(--border2)') + ';"></div>'
-      : '';
-
-    // Streak counter for settle phase
-    var streakHtml = '';
-    if (p.key === 'settle' && days > 0 && !isDone) {
-      streakHtml = '<span style="font-size:11px;color:var(--teal2);margin-left:6px;">🌾 ' + days + ' dage</span>';
+    // Node appearance
+    var nodeStyle, nodeInner;
+    if (isDone) {
+      nodeStyle = 'background:var(--teal);border:3px solid var(--teal);';
+      nodeInner = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else if (isActive) {
+      nodeStyle = 'background:white;border:3px solid var(--teal);box-shadow:0 0 0 10px rgba(26,122,106,.13);animation:journeyPulse 1.8s ease-in-out infinite;';
+      nodeInner = '<span style="font-size:26px;">' + p.icon + '</span>';
+    } else {
+      nodeStyle = 'background:var(--border);border:3px solid var(--border2);';
+      nodeInner = '<span style="font-size:26px;filter:grayscale(1);opacity:.4;">' + p.icon + '</span>';
     }
+
+    // Card border / shadow
+    var cardStyle = isActive
+      ? 'border:2px solid var(--teal);box-shadow:0 4px 20px rgba(26,122,106,.14);'
+      : isDone
+        ? 'border:1px solid var(--teal-border);'
+        : 'border:1px solid var(--border);opacity:.65;';
 
     // Status chip
-    var chipText  = isDone ? 'FULDFØRT' : isActive ? 'NU' : '';
-    var chipStyle = isDone
-      ? 'background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border);'
+    var chipHtml = isDone
+      ? '<span class="mono" style="font-size:9px;padding:2px 8px;border-radius:20px;background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border);">DONE ✓</span>'
       : isActive
-        ? 'background:var(--text);color:white;'
-        : 'display:none;';
+        ? '<span class="mono" style="font-size:9px;padding:2px 8px;border-radius:20px;background:var(--text);color:white;letter-spacing:.4px;">NOW</span>'
+        : '';
 
-    // Completion date
-    var doneHtml = '';
+    // Body text
+    var bodyHtml = '';
     if (isDone && phaseData.completedAt) {
       var d = new Date(phaseData.completedAt);
-      doneHtml = '<div class="mono" style="font-size:10px;color:var(--dim);margin-top:2px;">Fuldført ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear() + '</div>';
-    }
-
-    // Tagline shown under title when pending/active
-    var taglineHtml = '';
-    if (!isDone) {
-      taglineHtml = '<div style="font-size:12px;color:var(--dim);margin-top:2px;line-height:1.5;">'
+      bodyHtml = '<div class="mono" style="font-size:10px;color:var(--dim);margin-bottom:8px;">Completed '
+        + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear() + '</div>';
+    } else {
+      bodyHtml = '<div style="font-size:12px;color:var(--mid);line-height:1.6;margin-bottom:8px;">'
         + p.desc.split('.')[0] + '.</div>';
     }
-
-    // CTA inside row (only for active phase)
-    var ctaHtml = '';
-    if (isActive && p.actionLabel) {
-      ctaHtml = '<button onclick="openJourneyPhaseModal(\'' + id + '\',\'' + p.key + '\')" class="btn btn-teal" style="margin-top:10px;width:100%;font-size:13px;">' + p.actionLabel + '</button>';
-    } else if (isActive && !p.actionLabel) {
-      // Auto phase (grain or settle) — show info CTA
-      ctaHtml = '<button onclick="openJourneyPhaseModal(\'' + id + '\',\'' + p.key + '\')" style="margin-top:10px;width:100%;background:none;border:1px solid var(--border);border-radius:10px;padding:9px;font-size:12px;color:var(--mid);cursor:pointer;">Hvad sker der her? →</button>';
+    if (p.key === 'settle' && days > 0 && !isDone) {
+      bodyHtml += '<div style="font-size:12px;color:var(--teal2);font-weight:600;margin-bottom:8px;">🌾 '
+        + days + ' days without</div>';
     }
 
-    var rowOpacity = isPending ? '0.5' : '1';
-
-    html += '<div style="display:flex;gap:13px;cursor:pointer;opacity:' + rowOpacity + ';" onclick="openJourneyPhaseModal(\'' + id + '\',\'' + p.key + '\')">'
-      + '<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:2px;">'
-      +   '<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;' + nodeStyle + '">'
-      +     (isDone ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : '')
-      +   '</div>'
-      +   lineHtml
-      + '</div>'
-      + '<div style="flex:1;padding-bottom:' + (idx < JOURNEY_PHASES.length-1 ? '4' : '0') + 'px;">'
-      +   '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">'
-      +     '<div style="display:flex;align-items:center;gap:6px;">'
-      +       '<span style="font-size:18px;">' + p.icon + '</span>'
-      +       '<div class="syne" style="font-size:14px;font-weight:700;">' + p.title + '</div>'
-      +       streakHtml
-      +     '</div>'
-      +     '<div class="mono" style="font-size:9px;padding:3px 7px;border-radius:20px;letter-spacing:.4px;' + chipStyle + '">' + chipText + '</div>'
-      +   '</div>'
-      +   doneHtml
-      +   taglineHtml
-      +   ctaHtml
-      + '</div>'
+    // Social proof
+    var socialMb = (isActive && p.actionLabel) ? '10' : '0';
+    var socialHtml = '<div style="display:flex;align-items:center;gap:5px;margin-bottom:' + socialMb + 'px;">'
+      + '<span style="font-size:10px;letter-spacing:2px;color:var(--teal);opacity:.6;">●●●●●</span>'
+      + '<span style="font-size:11px;color:var(--dim);">' + countLabel + ' people on this step</span>'
       + '</div>';
 
-    if (idx < JOURNEY_PHASES.length - 1) {
-      // spacing between rows handled by lineHtml
+    // CTA
+    var ctaHtml = '';
+    if (isActive && p.actionLabel) {
+      ctaHtml = '<button onclick="event.stopPropagation();openJourneyPhaseModal(\'' + id + '\',\'' + p.key + '\')" class="btn btn-teal" style="width:100%;font-size:13px;">' + p.actionLabel + '</button>';
+    } else if (isActive) {
+      ctaHtml = '<button onclick="event.stopPropagation();openJourneyPhaseModal(\'' + id + '\',\'' + p.key + '\')" style="width:100%;background:none;border:1px solid var(--border);border-radius:10px;padding:9px;font-size:12px;color:var(--mid);cursor:pointer;">What happens here? →</button>';
     }
+
+    // Connector to step below
+    var connHtml = '';
+    if (revIdx < reversed.length - 1) {
+      var connColor = isDone ? 'var(--teal)' : 'var(--border2)';
+      var tilt = isRight ? '-22deg' : '22deg';
+      var connAlign = isRight ? 'flex-end;padding-right:48px' : 'flex-start;padding-left:48px';
+      connHtml = '<div style="height:44px;display:flex;align-items:center;justify-content:' + connAlign + ';">'
+        + '<div style="width:2px;height:40px;background:' + connColor + ';border-radius:2px;transform:rotate(' + tilt + ');"></div>'
+        + '</div>';
+    }
+
+    html += '<div id="journey-step-' + p.key + '">'
+      // Node — positioned left or right
+      + '<div style="display:flex;justify-content:' + (isRight ? 'flex-end' : 'flex-start') + ';padding:' + (isRight ? '0 20px 0 0' : '0 0 0 20px') + ';">'
+      +   '<div style="width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;' + nodeStyle + '">' + nodeInner + '</div>'
+      + '</div>'
+      // Card
+      + '<div style="background:white;border-radius:16px;padding:14px 16px;margin-top:10px;cursor:pointer;' + cardStyle + '" onclick="openJourneyPhaseModal(\'' + id + '\',\'' + p.key + '\')">'
+      +   '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
+      +     '<div style="display:flex;align-items:center;gap:6px;">'
+      +       '<span class="mono" style="font-size:9px;color:var(--dim);letter-spacing:.5px;">' + p.label + '</span>'
+      +       '<span style="color:var(--border2);">·</span>'
+      +       '<span class="mono" style="font-size:9px;color:var(--dim);">' + p.week + '</span>'
+      +     '</div>'
+      +     chipHtml
+      +   '</div>'
+      +   '<div class="syne" style="font-size:16px;font-weight:800;margin-bottom:4px;">' + p.title + '</div>'
+      +   bodyHtml + socialHtml + ctaHtml
+      + '</div>'
+      + connHtml
+      + '</div>';
   });
 
-  html += '</div>';
   root.innerHTML = html;
 
-  // Update journey tab button badge
-  var tabBtn = document.getElementById('db-tab-journey-btn');
-  if (tabBtn) {
-    var doneCount = JOURNEY_PHASES.filter(function(p) {
-      return j.phases[p.key] && j.phases[p.key].completedAt;
-    }).length;
-    tabBtn.innerHTML = 'JOURNEY <span style="background:var(--teal);color:white;border-radius:9px;font-size:9px;padding:1px 5px;margin-left:3px;font-family:\'Syne Mono\',monospace;">' + doneCount + '/5</span>';
+  // Header badge
+  var badge = document.getElementById('sj-badge');
+  if (badge) badge.textContent = doneCount + '/' + total;
+
+  // Scroll active step into center view
+  var activeEl = document.getElementById('journey-step-' + (activeKey || 'grain'));
+  if (activeEl) setTimeout(function() {
+    activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 160);
+}
+
+// ── Hub card updater ────────────────────────────────────────────────────────
+function updateDossierHub(id) {
+  var j = getJourney(id);
+  var overrides = JOURNEY_OVERRIDES[id] || {};
+  var activeKey = getActivePhaseKey(id);
+  var total = JOURNEY_PHASES.length;
+  var doneCount = JOURNEY_PHASES.filter(function(p) { return j.phases[p.key] && j.phases[p.key].completedAt; }).length;
+
+  // Mini path dots
+  var pathEl = document.getElementById('db-hub-journey-path');
+  if (pathEl) {
+    pathEl.innerHTML = JOURNEY_PHASES.map(function(p) {
+      var phaseData = j.phases[p.key] || {};
+      var isDone = !!phaseData.completedAt;
+      var isActive = p.key === activeKey;
+      var dot = isDone
+        ? '<div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.9);flex-shrink:0;"></div>'
+        : isActive
+          ? '<div style="width:16px;height:16px;border-radius:50%;background:white;border:2px solid rgba(255,255,255,.5);flex-shrink:0;box-shadow:0 0 0 4px rgba(255,255,255,.2);"></div>'
+          : '<div style="width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3);flex-shrink:0;"></div>';
+      return dot;
+    }).join('<div style="flex:1;height:2px;background:rgba(255,255,255,.25);max-width:24px;"></div>');
   }
+
+  // Title
+  var titleEl = document.getElementById('db-hub-journey-title');
+  if (titleEl) {
+    if (doneCount === total) {
+      titleEl.textContent = 'Journey complete ✓';
+    } else {
+      titleEl.textContent = 'Step ' + (doneCount + 1) + ' of ' + total;
+    }
+  }
+
+  // Next step label
+  var nextEl = document.getElementById('db-hub-journey-next');
+  if (nextEl && activeKey) {
+    var pBase = JOURNEY_PHASES.find(function(p) { return p.key === activeKey; });
+    if (pBase) {
+      var p = Object.assign({}, pBase, overrides[activeKey] || {});
+      nextEl.textContent = 'Next: ' + p.title;
+    }
+  } else if (nextEl) {
+    nextEl.textContent = 'All steps completed';
+  }
+
+  // Actions count hint
+  var c = (window.companies||[]).find(function(x){return x.id===id;});
+  var actEl = document.getElementById('db-hub-actions-count');
+  if (actEl && c && c.actions) {
+    var n = c.actions.filter(function(a){return !a.isOwnerAction;}).length;
+    actEl.textContent = n + ' documented actions';
+  }
+}
+
+// Shim so existing callers (completePhase, checkSettleMilestones) still work
+function renderJourneyTab(id) {
+  updateDossierHub(id);
+  renderJourneyScreen(id);
 }
 
 function openJourneyPhaseModal(id, key) {
@@ -3748,13 +4001,13 @@ function openJourneyPhaseModal(id, key) {
   // Status chip
   var chip = document.getElementById('jpm-status-chip');
   if (isDone) {
-    chip.textContent = 'FULDFØRT ✓';
+    chip.textContent = 'COMPLETED ✓';
     chip.style.cssText = 'font-size:10px;padding:4px 9px;border-radius:20px;letter-spacing:.5px;background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border);';
   } else if (isActive) {
-    chip.textContent = 'AKTIV';
+    chip.textContent = 'ACTIVE';
     chip.style.cssText = 'font-size:10px;padding:4px 9px;border-radius:20px;letter-spacing:.5px;background:var(--text);color:white;';
   } else {
-    chip.textContent = 'KOMMER';
+    chip.textContent = 'UPCOMING';
     chip.style.cssText = 'font-size:10px;padding:4px 9px;border-radius:20px;letter-spacing:.5px;background:var(--border);color:var(--dim);';
   }
 
@@ -3763,7 +4016,7 @@ function openJourneyPhaseModal(id, key) {
   var dateEl = document.getElementById('jpm-done-date');
   if (isDone && phaseData.completedAt) {
     var d = new Date(phaseData.completedAt);
-    dateEl.textContent = '✓ Fuldført ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+    dateEl.textContent = '✓ Completed ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
     stamp.style.display = '';
   } else {
     stamp.style.display = 'none';
@@ -3780,7 +4033,7 @@ function openJourneyPhaseModal(id, key) {
     cta.style.display = 'none';
   } else if (!isDone && !isActive) {
     cta.style.display = '';
-    cta.textContent = 'Start alligevel →';
+    cta.textContent = 'Start anyway →';
     cta.style.background = 'none';
     cta.style.border = '1px solid var(--border)';
     cta.style.color = 'var(--mid)';
