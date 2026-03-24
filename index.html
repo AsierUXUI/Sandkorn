@@ -1058,6 +1058,12 @@ textarea.input{min-height:80px;resize:none}
       <div class="menu-row" onclick="showScreen('screen-about')"><div style="display:flex;align-items:center;gap:9px;"><span>📖</span><div><div style="font-weight:500;font-size:13px;">About Sandkorn</div><div class="mono" style="font-size:10px;color:var(--dim);">Why, finances, roadmap</div></div></div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--dimmer)" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
       <div class="menu-row" onclick="openModal('modal-invite')"><div style="display:flex;align-items:center;gap:9px;"><span>🤝</span><div><div style="font-weight:500;font-size:13px;">Invite people</div><div class="mono" style="font-size:10px;color:var(--dim);">Leave together</div></div></div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--dimmer)" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
       <div class="menu-row" onclick="openModal('modal-settings')"><div style="display:flex;align-items:center;gap:9px;"><span>⚙️</span><div><div style="font-weight:500;font-size:13px;">Settings</div><div class="mono" style="font-size:10px;color:var(--dim);">Notifications, privacy, data</div></div></div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--dimmer)" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
+      <div class="menu-row" style="cursor:default;"><div style="display:flex;align-items:center;gap:9px;"><span>🌐</span><div><div style="font-weight:500;font-size:13px;">Language</div><div class="mono" style="font-size:10px;color:var(--dim);">App language</div></div></div>
+        <div style="display:flex;gap:2px;background:var(--border);border-radius:8px;padding:2px;">
+          <button id="lang-btn-da" onclick="setLang('da')" style="border:none;background:var(--text);color:white;border-radius:6px;padding:3px 10px;font-size:11px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .15s;">DA</button>
+          <button id="lang-btn-en" onclick="setLang('en')" style="border:none;background:none;color:var(--dim);border-radius:6px;padding:3px 10px;font-size:11px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .15s;">EN</button>
+        </div>
+      </div>
       <div class="menu-row"><div style="display:flex;align-items:center;gap:9px;"><span>💻</span><div><div style="font-weight:500;font-size:13px;">GitHub</div><div class="mono" style="font-size:10px;color:var(--dim);">Open source</div></div></div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--dimmer)" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round"/></svg></div>
     </div>
     <button class="btn btn-teal" style="margin-bottom:24px;" onclick="showScreen('screen-donate')">Donate to keep this going</button>
@@ -1615,15 +1621,16 @@ const events=[
 // ══════════════════════════════════════════
 const SCOPE_ORDER = ['you','city','dk'];
 const SCOPE_GRAIN_COUNT = {you:1, city:187, dk:312};
+const SCOPE_GRAIN_R    = {you:13, city:3.5, dk:2.2};
 const SCOPE_DATA = {
   you:  {n:'1',   label:'korn du har lagt'},
   city: {n:'187', label:'korn i din by'},
   dk:   {n:'312', label:'korn i Danmark'},
 };
-const GOAL_GRAINS = 280; // visual grain count representing the goal line
+const GOAL_GRAINS = 280;
 
 let curScope = 'city';
-let grains = []; // {x, y, r, vx, vy, settled}
+let grains = [];
 let leakRAF = null;
 let pileRAF = null;
 let ghostTimeout = null;
@@ -1636,86 +1643,327 @@ function seededRand(seed) {
   return function() { s = (s * 9301 + 49297) % 233280; return s / 233280; };
 }
 
-function buildGrains(count, W, H) {
+function getPileCanvas() { return document.getElementById('pile-canvas'); }
+
+// ── Diamond grain drawing ────────────────────────────────────────────────────
+function drawGrainDiamond(ctx, x, y, r, alpha, isMine) {
+  if (r < 0.5) return;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(Math.PI / 4);
+  const s = r * 1.38; // side of the square → tip-to-tip ≈ r*√2
+  const cr = s * 0.28; // rounded corner radius
+  ctx.beginPath();
+  if (ctx.roundRect) {
+    ctx.roundRect(-s / 2, -s / 2, s, s, cr);
+  } else {
+    const x0 = -s/2, y0 = -s/2, w = s, h = s;
+    ctx.moveTo(x0 + cr, y0);
+    ctx.lineTo(x0 + w - cr, y0);
+    ctx.arcTo(x0 + w, y0,     x0 + w, y0 + cr,     cr);
+    ctx.lineTo(x0 + w, y0 + h - cr);
+    ctx.arcTo(x0 + w, y0 + h, x0 + w - cr, y0 + h, cr);
+    ctx.lineTo(x0 + cr, y0 + h);
+    ctx.arcTo(x0, y0 + h,     x0, y0 + h - cr,     cr);
+    ctx.lineTo(x0, y0 + cr);
+    ctx.arcTo(x0, y0,         x0 + cr, y0,          cr);
+    ctx.closePath();
+  }
+  if (isMine) {
+    ctx.fillStyle = `rgba(200,164,100,${Math.min(1, alpha)})`;
+  } else {
+    ctx.fillStyle = `rgba(175,142,80,${Math.min(1, alpha * 0.55)})`;
+  }
+  ctx.fill();
+  ctx.restore();
+}
+
+// ── Pile layout builder ──────────────────────────────────────────────────────
+function buildPileLayout(count, W, H, grainR) {
   const rand = seededRand(42);
   const gs = [];
-  const baseY = H - 4;
-  const pileW = W * 0.7;
-  const pileX = W * 0.15;
-
+  const baseY = H - grainR * 1.8;
+  const pileW = W * 0.72;
+  const pileX = W * 0.14;
   for (let i = 0; i < count; i++) {
-    // stack grains roughly in a triangle/pile shape
-    const progress = i / count;
-    const layerH = Math.sqrt(progress) * H * 0.82;
-    const layerSpread = pileW * (1 - progress * 0.6);
-    const x = pileX + layerSpread * 0.1 + rand() * layerSpread * 0.8;
-    const y = baseY - layerH * rand();
-    const r = 2 + rand() * 2.2;
-    gs.push({ x, y, r, settled: true, alpha: 0.18 + rand() * 0.28 });
+    const isMine = i === 0;
+    const progress = count <= 1 ? 0 : i / count;
+    const layerH = Math.sqrt(progress) * H * 0.8;
+    const layerSpread = pileW * (1 - progress * 0.62);
+    const x = count === 1 ? W * 0.5 : (pileX + layerSpread * 0.1 + rand() * layerSpread * 0.8);
+    const y = count === 1 ? baseY  : (baseY - layerH * rand());
+    const alpha = isMine ? 0.92 : (0.55 + rand() * 0.35);
+    gs.push({ x, y, r: grainR, isMine, alpha, vx: 0, vy: 0 });
   }
   return gs;
 }
 
-function getPileCanvas() { return document.getElementById('pile-canvas'); }
-
-function drawPile(cv, gs, goalY, showGoalLine) {
+// ── Unified draw pass ────────────────────────────────────────────────────────
+function drawGrainsFrame(cv, gs, goalY, showGoalLine) {
   if (!cv) return;
   const ctx = cv.getContext('2d');
-  const W = cv.width; const H = cv.height;
+  const W = cv.width, H = cv.height;
   ctx.clearRect(0, 0, W, H);
-
-  // draw grains
-  gs.forEach(g => {
-    ctx.beginPath();
-    ctx.arc(g.x, g.y, g.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(192,164,100,${g.alpha||0.22})`;
-    ctx.fill();
-  });
-
-  // goal dashed line
+  // Draw non-mine grains first, mine on top
+  gs.forEach(g => { if (!g.isMine) drawGrainDiamond(ctx, g.x, g.y, g.r, g.alpha, false); });
+  gs.forEach(g => { if (g.isMine)  drawGrainDiamond(ctx, g.x, g.y, g.r, g.alpha, true);  });
   if (showGoalLine && goalY > 0 && goalY < H) {
     ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = 'rgba(90,95,88,0.3)';
+    ctx.strokeStyle = 'rgba(90,95,88,0.28)';
     ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, goalY);
-    ctx.lineTo(W, goalY);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, goalY); ctx.lineTo(W, goalY); ctx.stroke();
     ctx.setLineDash([]);
-    // label
     const lbl = document.getElementById('goal-line-label');
     if (lbl) { lbl.style.top = (goalY - 14) + 'px'; lbl.textContent = 'Goal'; }
   }
 }
 
-function initPile(scope) {
+// ── Bob (idle float) ─────────────────────────────────────────────────────────
+function startBob(cv, settled, goalY) {
+  let bt = 0;
+  (function bob() {
+    bt += 0.005;
+    const gs2 = settled.map(g => ({...g, y: g.y + Math.sin(bt + g.x * 0.05) * 0.35}));
+    drawGrainsFrame(cv, gs2, goalY, true);
+    pileRAF = requestAnimationFrame(bob);
+  })();
+}
+
+// ── initPile: scope-aware animation entry point ──────────────────────────────
+function initPile(scope, prevScope) {
   const cv = getPileCanvas(); if (!cv) return;
   const parent = cv.parentElement;
   const W = parent.offsetWidth; const H = parent.offsetHeight || 160;
   cv.width = W; cv.height = H;
   if (pileRAF) { cancelAnimationFrame(pileRAF); pileRAF = null; }
+
   const count = SCOPE_GRAIN_COUNT[scope];
-  grains = buildTypedGrains(count, W, H, scope);
-  const goalY = H * (1 - GOAL_GRAINS / 420);
-  goalCrossed = count >= GOAL_GRAINS;
-  let t = 0;
-  const targetAlphas = grains.map(g => g.alpha);
-  grains.forEach(g => { g.alpha = 0; });
-  (function animate() {
-    t = Math.min(t + 0.025, 1);
-    const e = 1 - Math.pow(1-t, 3);
-    grains.forEach((g,i) => { g.alpha = targetAlphas[i] * e; });
-    drawPileTyped(cv, grains, goalY, true);
-    if (t < 1) { pileRAF = requestAnimationFrame(animate); }
-    else {
-      let bt = 0;
-      (function bob() {
-        bt += 0.005;
-        const gs2 = grains.map(g => ({...g, y: g.y + Math.sin(bt + g.x*0.04)*0.4}));
-        drawPileTyped(cv, gs2, goalY, true);
-        pileRAF = requestAnimationFrame(bob);
-      })();
-      if (goalCrossed) scheduleBurst(cv, goalY);
+  const grainR = SCOPE_GRAIN_R[scope];
+  const goalY  = H * (1 - GOAL_GRAINS / 420);
+  goalCrossed  = count >= GOAL_GRAINS;
+
+  const layout = buildPileLayout(count, W, H, grainR);
+  grains = layout;
+
+  const prevCount = prevScope ? SCOPE_GRAIN_COUNT[prevScope] : 0;
+  const prevR     = prevScope ? SCOPE_GRAIN_R[prevScope] : grainR;
+
+  // ── Going UP in scope: You → CPH, CPH → DK, or You → DK ──────────────────
+  if (!prevScope || count > prevCount) {
+    if (scope === 'you') {
+      // 1 grain spring drop
+      animateSpringDrop(cv, layout[0], goalY);
+    } else {
+      // Zoom-out + rain
+      const prevLayout = buildPileLayout(prevCount, W, H, prevR);
+      // Take existing grains (prevCount), but use new smaller radius
+      const existingInNew = layout.slice(0, prevCount);
+      const newGrains     = layout.slice(prevCount);
+      animateZoomAndRain(cv, existingInNew, newGrains, prevR, grainR, goalY);
+    }
+  }
+  // ── Going DOWN: CPH → You, DK → You, DK → CPH ────────────────────────────
+  else if (scope === 'you') {
+    // Scatter all non-mine + zoom in my grain
+    const prevLayout = buildPileLayout(prevCount, W, H, prevR);
+    const myGrain = { ...prevLayout[0], r: prevR };
+    animateScatterAndZoom(cv, prevLayout, myGrain, grainR, goalY);
+  } else {
+    // DK → CPH: some grains scatter, remainder zoom-in
+    const prevLayout = buildPileLayout(prevCount, W, H, prevR);
+    const keepers = prevLayout.slice(0, count);     // grains that stay
+    const leavers = prevLayout.slice(count);         // extra DK grains that leave
+    animatePartialScatterAndZoom(cv, keepers, leavers, prevR, grainR, goalY);
+  }
+}
+
+// ── Spring drop animation (You scope) ───────────────────────────────────────
+function animateSpringDrop(cv, grain, goalY) {
+  let y = -20, vy = 0;
+  const gravity = 0.55;
+  const floorY  = grain.y;
+  const bounceCoef = 0.42;
+
+  (function step() {
+    vy += gravity;
+    y += vy;
+    if (y >= floorY) {
+      y = floorY;
+      vy *= -bounceCoef;
+      if (Math.abs(vy) < 0.4) {
+        // Settled — start gentle bob
+        const settled = [{ ...grain, y: floorY }];
+        startBob(cv, settled, goalY);
+        return;
+      }
+    }
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    drawGrainDiamond(ctx, grain.x, y, grain.r, grain.alpha, true);
+    pileRAF = requestAnimationFrame(step);
+  })();
+}
+
+// ── Zoom-out + rain animation (going up in scope) ────────────────────────────
+function animateZoomAndRain(cv, existingGrains, newGrains, fromR, toR, goalY) {
+  const W = cv.width;
+  const ZOOM_FRAMES = 22;
+  let zFrame = 0;
+
+  // Phase 1: zoom-out — shrink existing grains from fromR to toR
+  (function zoomStep() {
+    zFrame++;
+    const t = Math.min(zFrame / ZOOM_FRAMES, 1);
+    const e = 1 - Math.pow(1 - t, 2);
+    const currentR = fromR + (toR - fromR) * e;
+
+    const scaledGrains = existingGrains.map(g => ({ ...g, r: currentR }));
+    drawGrainsFrame(cv, scaledGrains, goalY, true);
+
+    if (zFrame < ZOOM_FRAMES) {
+      pileRAF = requestAnimationFrame(zoomStep);
+    } else {
+      rainStep();
+    }
+  })();
+
+  // Phase 2: rain new grains down
+  function rainStep() {
+    const maxDrop = Math.min(newGrains.length, 150);
+    const subset  = newGrains.slice(0, maxDrop);
+    const MS_TOTAL = Math.max(1200, maxDrop * 12);
+    const interval = MS_TOTAL / maxDrop;
+
+    let settled = [...existingGrains];
+    let active  = [];
+    let nextIdx = 0;
+    let t0 = null;
+
+    (function frame(ts) {
+      if (!t0) t0 = ts;
+      const elapsed = ts - t0;
+
+      // Spawn new grains
+      while (nextIdx < maxDrop && elapsed >= nextIdx * interval) {
+        const g = subset[nextIdx++];
+        active.push({ g, y: -toR * 2, vy: 1.2 + Math.random() * 2.5, done: false });
+      }
+
+      const ctx = cv.getContext('2d');
+      ctx.clearRect(0, 0, cv.width, cv.height);
+
+      // settled (non-mine then mine)
+      settled.forEach(g => { if (!g.isMine) drawGrainDiamond(ctx, g.x, g.y, g.r, g.alpha, false); });
+      settled.forEach(g => { if (g.isMine)  drawGrainDiamond(ctx, g.x, g.y, g.r, g.alpha, true);  });
+
+      // active falling
+      active.forEach(ag => {
+        if (ag.done) return;
+        ag.vy += 0.28;
+        ag.y  += ag.vy;
+        if (ag.y >= ag.g.y) {
+          ag.y   = ag.g.y;
+          ag.vy *= -0.28;
+          if (Math.abs(ag.vy) < 0.4) { ag.done = true; settled.push(ag.g); return; }
+        }
+        drawGrainDiamond(ctx, ag.g.x, ag.y, ag.g.r, ag.g.alpha, ag.g.isMine);
+      });
+
+      const allDone = nextIdx >= maxDrop && active.every(a => a.done);
+      if (!allDone) {
+        pileRAF = requestAnimationFrame(frame);
+      } else {
+        startBob(cv, settled, goalY);
+      }
+    })();
+  }
+}
+
+// ── Scatter + zoom-in (going back to You) ────────────────────────────────────
+function animateScatterAndZoom(cv, allGrains, myGrain, targetR, goalY) {
+  const W = cv.width, H = cv.height;
+  const cx = W / 2, cy = H * 0.6;
+  const ZOOM_FRAMES = 32;
+  let frame = 0;
+
+  let scattered = allGrains
+    .filter(g => !g.isMine)
+    .map(g => {
+      const dx = g.x - cx, dy = g.y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const spd  = 2.5 + Math.random() * 4;
+      return { ...g, vx: (dx/dist)*spd + (Math.random()-0.5)*1.5, vy: (dy/dist)*spd - Math.random()*1.5 };
+    });
+
+  (function step() {
+    frame++;
+    const t = Math.min(frame / ZOOM_FRAMES, 1);
+    const e = 1 - Math.pow(1 - t, 3);
+    const currentR = myGrain.r + (targetR - myGrain.r) * e;
+
+    scattered = scattered.map(g => ({
+      ...g,
+      x: g.x + g.vx,
+      y: g.y + g.vy,
+      vy: g.vy + 0.12,
+      alpha: Math.max(0, g.alpha - 0.038)
+    }));
+
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    scattered.forEach(g => { if (g.alpha > 0) drawGrainDiamond(ctx, g.x, g.y, g.r, g.alpha, false); });
+    drawGrainDiamond(ctx, myGrain.x, myGrain.y, currentR, myGrain.alpha, true);
+
+    const anyVisible = scattered.some(g => g.alpha > 0);
+    if (t < 1 || anyVisible) {
+      pileRAF = requestAnimationFrame(step);
+    } else {
+      const finalGrain = { ...myGrain, r: targetR };
+      startBob(cv, [finalGrain], goalY);
+    }
+  })();
+}
+
+// ── Partial scatter (DK → CPH: some leave, some stay) ────────────────────────
+function animatePartialScatterAndZoom(cv, keepers, leavers, fromR, toR, goalY) {
+  const W = cv.width, H = cv.height;
+  const cx = W / 2, cy = H * 0.5;
+  const ZOOM_FRAMES = 22;
+  let frame = 0;
+
+  let scattered = leavers.map(g => {
+    const dx = g.x - cx, dy = g.y - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const spd  = 2 + Math.random() * 3;
+    return { ...g, vx: (dx/dist)*spd + (Math.random()-0.5), vy: (dy/dist)*spd - Math.random() };
+  });
+
+  (function step() {
+    frame++;
+    const t = Math.min(frame / ZOOM_FRAMES, 1);
+    const e = 1 - Math.pow(1 - t, 2);
+    const currentR = fromR + (toR - fromR) * e;
+
+    scattered = scattered.map(g => ({
+      ...g,
+      x: g.x + g.vx, y: g.y + g.vy, vy: g.vy + 0.1,
+      alpha: Math.max(0, g.alpha - 0.045)
+    }));
+
+    const zoomedKeepers = keepers.map(g => ({ ...g, r: currentR }));
+
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    zoomedKeepers.forEach(g => { if (!g.isMine) drawGrainDiamond(ctx, g.x, g.y, g.r, g.alpha, false); });
+    scattered.forEach(g => { if (g.alpha > 0) drawGrainDiamond(ctx, g.x, g.y, g.r, g.alpha, false); });
+    zoomedKeepers.forEach(g => { if (g.isMine) drawGrainDiamond(ctx, g.x, g.y, g.r, g.alpha, true); });
+
+    const anyVisible = scattered.some(g => g.alpha > 0);
+    if (t < 1 || anyVisible) {
+      pileRAF = requestAnimationFrame(step);
+    } else {
+      const finalKeepers = keepers.map(g => ({ ...g, r: toR }));
+      startBob(cv, finalKeepers, goalY);
     }
   })();
 }
@@ -1736,22 +1984,19 @@ function spawnBurst(cv, goalY) {
     y: goalY,
     vx: (Math.random() - 0.5) * 4,
     vy: -1.5 - Math.random() * 2,
-    r: 1.5 + Math.random() * 1.5,
+    r: 1.4 + Math.random() * 1.4,
     life: 1,
   }));
   (function burst() {
     particles.forEach(p => {
       p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.life -= 0.04;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(192,164,100,${p.life * 0.8})`;
-      ctx.fill();
+      drawGrainDiamond(ctx, p.x, p.y, p.r, p.life * 0.85, false);
     });
     if (particles.some(p => p.life > 0)) requestAnimationFrame(burst);
   })();
 }
 
-// Leak animation — grains fall out through bottom of component, over page
+// Leak animation — diamond grains fall out below the card
 function triggerLeak(fromCount, toCount) {
   const excess = fromCount - toCount;
   if (excess <= 0) return;
@@ -1762,29 +2007,22 @@ function triggerLeak(fromCount, toCount) {
   if (!lcv) return;
   lcv.width = window.innerWidth; lcv.height = window.innerHeight;
   const ctx = lcv.getContext('2d');
-
-  // spawn leak particles from bottom of card
   const particles = Array.from({length: Math.min(excess, 40)}, () => ({
     x: rect.left + rect.width * 0.15 + Math.random() * rect.width * 0.7,
     y: rect.bottom - 10,
     vx: (Math.random() - 0.5) * 1.5,
     vy: 1 + Math.random() * 2,
-    r: 1.8 + Math.random() * 1.8,
+    r: 2.2 + Math.random() * 1.4,
     life: 1,
   }));
-
   if (leakRAF) cancelAnimationFrame(leakRAF);
   (function fall() {
     ctx.clearRect(0, 0, lcv.width, lcv.height);
     let alive = false;
     particles.forEach(p => {
       if (p.life <= 0) return;
-      p.x += p.vx; p.y += p.vy; p.vy += 0.15;
-      p.life -= 0.018;
-      const fade = Math.max(0, p.life);
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(192,164,100,${fade * 0.55})`;
-      ctx.fill();
+      p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life -= 0.018;
+      drawGrainDiamond(ctx, p.x, p.y, p.r, Math.max(0, p.life) * 0.7, false);
       alive = true;
     });
     if (alive) leakRAF = requestAnimationFrame(fall);
@@ -1814,12 +2052,7 @@ function setScope(k, el) {
   const ghost = document.getElementById('ghost-text');
   if (k === 'you') { ghost.classList.remove('show'); } else { ghost.classList.add('show'); }
 
-  // leak or grow
-  const prevCount = SCOPE_GRAIN_COUNT[prev];
-  const newCount = SCOPE_GRAIN_COUNT[k];
-  if (newCount < prevCount) triggerLeak(prevCount, newCount);
-
-  setTimeout(() => initPile(k), 80);
+  setTimeout(() => initPile(k, prev), 80);
 }
 
 // Live ghost feed
@@ -1842,7 +2075,6 @@ function triggerGhost() {
 }
 
 function dropOneGrain() {
-  // Use a short-lived overlay canvas so the falling grain is visible above bob loop
   const cv = getPileCanvas(); if (!cv) return;
   const parent = cv.parentElement; if (!parent) return;
   let ov = parent.querySelector('#grain-overlay');
@@ -1854,16 +2086,14 @@ function dropOneGrain() {
   }
   ov.width = cv.width; ov.height = cv.height;
   const ctx = ov.getContext('2d');
-  const grainColors = ['#c8a464','#d4b47c','#e8c070','#b08840','#dcc8a0'];
-  const col = grainColors[Math.floor(Math.random()*grainColors.length)];
+  const grainR = SCOPE_GRAIN_R[curScope] || 3;
   const x = cv.width * 0.15 + Math.random() * cv.width * 0.7;
-  let y = 0; const r = 2.5;
-  const targetY = cv.height * (0.5 + Math.random() * 0.3);
+  let y = 0; let vy = 1.5;
+  const targetY = cv.height * (0.45 + Math.random() * 0.3);
   (function fall() {
-    ctx.clearRect(x - 6, y - 6, 12, 12);
-    y += 3.5;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = col; ctx.fill();
+    ctx.clearRect(x - grainR*2-2, y - grainR*2-2, grainR*4+4, grainR*4+4);
+    vy += 0.25; y += vy;
+    drawGrainDiamond(ctx, x, y, grainR, 0.7, false);
     if (y < targetY) { requestAnimationFrame(fall); }
     else { setTimeout(() => { ctx.clearRect(0, 0, ov.width, ov.height); }, 300); }
   })();
@@ -3077,57 +3307,7 @@ const GRAIN_TYPES = {
 };
 
 // Override buildGrains to assign typed colors
-function buildTypedGrains(count, W, H, scope) {
-  const rand = seededRand(42);
-  const gs = [];
-  const baseY = H - 4;
-  const pileW = W * 0.72;
-  const pileX = W * 0.14;
-  const typeKeys = Object.keys(GRAIN_TYPES);
-  for (let i = 0; i < count; i++) {
-    const progress = i / count;
-    const layerH = Math.sqrt(progress) * H * 0.82;
-    const layerSpread = pileW * (1 - progress * 0.62);
-    const x = pileX + layerSpread * 0.1 + rand() * layerSpread * 0.8;
-    const y = baseY - layerH * rand();
-    const r = 2 + rand() * 2.2;
-    const typeKey = typeKeys[Math.floor(rand() * typeKeys.length)];
-    const baseColor = GRAIN_TYPES[typeKey].color;
-    // Parse hex to rgba
-    const rr = parseInt(baseColor.slice(1,3),16);
-    const gg = parseInt(baseColor.slice(3,5),16);
-    const bb = parseInt(baseColor.slice(5,7),16);
-    gs.push({ x, y, r, settled:true, alpha:0.20+rand()*0.30, rr, gg, bb, typeKey });
-  }
-  return gs;
-}
-
-// Override drawPile to use typed colors
-function drawPileTyped(cv, gs, goalY, showGoalLine) {
-  if (!cv) return;
-  const ctx = cv.getContext('2d');
-  const W = cv.width; const H = cv.height;
-  ctx.clearRect(0, 0, W, H);
-  gs.forEach(g => {
-    ctx.beginPath();
-    ctx.arc(g.x, g.y, g.r, 0, Math.PI * 2);
-    if (g.rr !== undefined) {
-      ctx.fillStyle = `rgba(${g.rr},${g.gg},${g.bb},${g.alpha||0.22})`;
-    } else {
-      ctx.fillStyle = `rgba(192,164,100,${g.alpha||0.22})`;
-    }
-    ctx.fill();
-  });
-  if (showGoalLine && goalY > 0 && goalY < H) {
-    ctx.setLineDash([4,4]);
-    ctx.strokeStyle = 'rgba(90,95,88,0.28)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0,goalY); ctx.lineTo(W,goalY); ctx.stroke();
-    ctx.setLineDash([]);
-    const lbl = document.getElementById('goal-line-label');
-    if (lbl) { lbl.style.top=(goalY-14)+'px'; lbl.textContent='Goal'; }
-  }
-}
+// buildTypedGrains and drawPileTyped replaced by buildPileLayout + drawGrainsFrame above
 
 
 // ═══════════════════════════════
@@ -3385,6 +3565,29 @@ const metaAlternatives = [
   },
 ];
 
+const woltAlternatives = [
+  {
+    id: 'a-hungry',
+    name: 'Hungry.dk',
+    sub: 'Madlevering med overenskomst',
+    emoji: '🍽️',
+    desc: 'Just Eats danske platform — bude er ansat på overenskomst med timeløn, feriepenge og pension.',
+    tags: ['Overenskomst', 'Dansk platform', 'Timeløn'],
+    migrate: 'Bestil via Hungry.dk app eller web',
+    url: 'hungry.dk'
+  },
+  {
+    id: 'a-direkte',
+    name: 'Bestil direkte',
+    sub: 'Ring eller bestil via restaurantens side',
+    emoji: '📞',
+    desc: 'De fleste restauranter tager bestillinger direkte — pengene går til restauranten, ikke til en platform.',
+    tags: ['Ingen platform', 'Pengene til restauranten', 'Gratis'],
+    migrate: 'Find restaurantens nummer eller hjemmeside',
+    url: ''
+  },
+];
+
 function renderMetaAlts() {
   const el = document.getElementById('meta-alts-list'); if (!el) return;
   el.innerHTML = metaAlternatives.map(a => `
@@ -3473,6 +3676,25 @@ function loadSavedAvatar() {
     if (b64) applyAvatar(b64);
   } catch(e) {}
 }
+
+// ─── LANGUAGE ─────────────────────────────────────────────────────────────────
+var currentLang = 'da';
+try { currentLang = localStorage.getItem('sk_lang') || 'da'; } catch(e) {}
+
+function setLang(lang) {
+  currentLang = lang;
+  try { localStorage.setItem('sk_lang', lang); } catch(e) {}
+  var da = document.getElementById('lang-btn-da');
+  var en = document.getElementById('lang-btn-en');
+  if (!da || !en) return;
+  da.style.background = lang === 'da' ? 'var(--text)' : 'none';
+  da.style.color      = lang === 'da' ? 'white' : 'var(--dim)';
+  en.style.background = lang === 'en' ? 'var(--text)' : 'none';
+  en.style.color      = lang === 'en' ? 'white' : 'var(--dim)';
+}
+
+// Apply saved lang on load
+(function() { setLang(currentLang); })();
 
 // ─── BOYCOTT PLAN ─────────────────────────────────────────────────────────────
 let planSelected = [];
@@ -6006,10 +6228,10 @@ document.addEventListener('DOMContentLoaded', () => {
     <!-- ── BEAT 2: You, Personally ── -->
     <div class="bo-card bo-card-2">
       <div class="bo-card-bg"></div>
-      <div class="bo-beat-label">THIS IS ABOUT YOU</div>
-      <div class="bo-big-claim">Your feed was designed<br>to make you anxious.</div>
+      <div id="bo2-label" class="bo-beat-label">THIS IS ABOUT YOU</div>
+      <div id="bo2-claim" class="bo-big-claim">Your feed was designed<br>to make you anxious.</div>
 
-      <div class="bo-facts-row">
+      <div id="bo2-facts" class="bo-facts-row">
         <div class="bo-fact-block f1">
           <div class="bo-fact-number">1 in 3</div>
           <div class="bo-fact-label">Teenage girls said Instagram made their body image <em>worse</em>. Meta's own researchers found this. Their report was buried.</div>
@@ -6036,10 +6258,10 @@ document.addEventListener('DOMContentLoaded', () => {
     <!-- ── BEAT 3: Denmark ── -->
     <div class="bo-card bo-card-3">
       <div class="bo-card-bg"></div>
-      <div class="bo-beat-label">WHAT IT COSTS DENMARK</div>
-      <div class="bo-big-claim bo-big-claim-3">While you scrolled,<br>your public sphere<br>was being bought.</div>
+      <div id="bo3-label" class="bo-beat-label">WHAT IT COSTS DENMARK</div>
+      <div id="bo3-claim" class="bo-big-claim bo-big-claim-3">While you scrolled,<br>your public sphere<br>was being bought.</div>
 
-      <div class="bo-facts-row">
+      <div id="bo3-facts" class="bo-facts-row">
         <div class="bo-fact-block f1">
           <div class="bo-fact-number bo-fact-number-blue">€5.75M</div>
           <div class="bo-fact-label">Meta's EU lobbying spend in 2022 alone — working to weaken the Digital Services Act and block GDPR enforcement.</div>
@@ -6066,18 +6288,18 @@ document.addEventListener('DOMContentLoaded', () => {
     <!-- ── BEAT 4: The World ── -->
     <div class="bo-card bo-card-4">
       <div class="bo-card-bg"></div>
-      <div class="bo-beat-label">OUTSIDE YOUR BUBBLE</div>
+      <div id="bo4-label" class="bo-beat-label">OUTSIDE YOUR BUBBLE</div>
 
-      <div class="bo-world-headline">The same algorithm<br>enabled a genocide.</div>
+      <div id="bo4-headline" class="bo-world-headline">The same algorithm<br>enabled a genocide.</div>
 
       <div class="bo-world-quote">
-        <div class="bo-world-quote-text">"Facebook was a useful instrument for those seeking to spread messages of hatred and incite violence."</div>
-        <div class="bo-world-quote-attr">— UN Fact-Finding Mission on Myanmar · August 2018</div>
+        <div id="bo4-quote-text" class="bo-world-quote-text">"Facebook was a useful instrument for those seeking to spread messages of hatred and incite violence."</div>
+        <div id="bo4-quote-attr" class="bo-world-quote-attr">— UN Fact-Finding Mission on Myanmar · August 2018</div>
       </div>
 
-      <div class="bo-world-follow">In 2017 and 2018, the Rohingya genocide killed an estimated 10,000 people. A UN investigation found that Facebook's algorithmic amplification of hate speech was a contributing factor. Internal Meta researchers later confirmed the platform had been warned — and had not acted.</div>
+      <div id="bo4-follow" class="bo-world-follow">In 2017 and 2018, the Rohingya genocide killed an estimated 10,000 people. A UN investigation found that Facebook's algorithmic amplification of hate speech was a contributing factor. Internal Meta researchers later confirmed the platform had been warned — and had not acted.</div>
 
-      <div class="bo-world-src-row">
+      <div id="bo4-sources" class="bo-world-src-row">
         <a class="bo-world-src" href="https://www.ohchr.org/en/press-releases/2018/08/myanmar-un-fact-finding-mission-releases-its-full-account-grave-human-rights" target="_blank">UN Human Rights, 2018</a>
         <a class="bo-world-src" href="https://www.reuters.com/article/us-myanmar-facebook/u-n-investigators-cite-facebook-role-in-myanmar-crisis-idUSKCN1GO2PN" target="_blank">Reuters, 2018</a>
         <a class="bo-world-src" href="https://www.nytimes.com/2018/10/15/technology/myanmar-facebook-genocide.html" target="_blank">New York Times, 2018</a>
@@ -6089,11 +6311,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <!-- ── BEAT 5: Anguish ── -->
     <div class="bo-card bo-card-5">
-      <div class="bo-anguish-q">How did we let<br>this happen?</div>
-      <div class="bo-anguish-l bo-al-1">Leaving felt complicated.</div>
-      <div class="bo-anguish-l bo-al-2">Everyone we knew was still there.</div>
-      <div class="bo-anguish-l bo-al-3">And one person felt too small to matter.</div>
-      <div class="bo-anguish-l bo-al-4">Until enough people thought the same thing.</div>
+      <div id="bo5-q" class="bo-anguish-q">How did we let<br>this happen?</div>
+      <div id="bo5-l1" class="bo-anguish-l bo-al-1">Leaving felt complicated.</div>
+      <div id="bo5-l2" class="bo-anguish-l bo-al-2">Everyone we knew was still there.</div>
+      <div id="bo5-l3" class="bo-anguish-l bo-al-3">And one person felt too small to matter.</div>
+      <div id="bo5-l4" class="bo-anguish-l bo-al-4">Until enough people thought the same thing.</div>
       <div class="bo-tap-hint">TAP TO CONTINUE</div>
       <div class="bo-tap-zone bo-tap-prev" onclick="boBack()"></div>
       <div class="bo-tap-zone bo-tap-next" onclick="boNext()"></div>
@@ -6101,11 +6323,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <!-- ── BEAT 6: The Pipeline ── -->
     <div class="bo-card bo-card-6">
-      <div class="bo-beat-label">WHY IT WORKS</div>
-      <div class="bo-pipeline-headline">Every time you scroll,<br>you clock in.</div>
-      <div class="bo-revenue-callout">Meta made €117 billion in ad revenue last year. Not from products. From you.</div>
+      <div id="bo6-label" class="bo-beat-label">WHY IT WORKS</div>
+      <div id="bo6-headline" class="bo-pipeline-headline">Every time you scroll,<br>you clock in.</div>
+      <div id="bo6-callout" class="bo-revenue-callout">Meta made €117 billion in ad revenue last year. Not from products. From you.</div>
 
-      <div class="bo-chain">
+      <div id="bo6-chain" class="bo-chain">
 
         <div class="bo-chain-step">
           <div class="bo-chain-step-icon">👁️</div>
@@ -6146,7 +6368,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <!-- ── BEAT 7: Your Place In It ── -->
     <div class="bo-card bo-card-7">
-      <div class="bo-grain-label">YOUR GRAIN</div>
+      <div id="bo7-label" class="bo-grain-label">YOUR GRAIN</div>
 
       <div class="bo-grain-field">
         <canvas id="bo-grain-canvas" class="bo-grain-canvas" width="220" height="140"></canvas>
@@ -6159,7 +6381,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <!-- Contacts note -->
-      <div class="bo-migration-note">
+      <div id="bo7-migration" class="bo-migration-note">
         <div class="bo-migration-title">Switching feels lonely. It isn't.</div>
         <div class="bo-migration-body">Thousands of people in Copenhagen already made this move. The tutorial shows you how to bring your contacts, export your photos, and invite the people you care about. You don't leave them behind — you bring them with you.</div>
       </div>
@@ -6168,10 +6390,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="bo-alts-row" id="bo-alts-row"></div>
 
       <div class="bo-cta-group">
-        <button class="bo-cta-primary" onclick="boStartTutorial()">
+        <button id="bo7-cta-primary" class="bo-cta-primary" onclick="boStartTutorial()">
           Drop your grain — start the walkthrough →
         </button>
-        <button class="bo-cta-already" onclick="boAlreadyLeft()">
+        <button id="bo7-cta-already" class="bo-cta-already" onclick="boAlreadyLeft()">
           Already left? Share with someone still inside →
         </button>
       </div>
@@ -6196,13 +6418,119 @@ var _boGrainTarget = 312;
 
 var boContent = {
   meta: {
+    // Beat 1
     beat1Headline: 'They know more about you\nthan your closest friend.',
     beat1Sub: 'And for the past decade, that knowledge has been sold — to advertisers, to political campaigns, to anyone who could pay.',
     beat1Source: 'Facebook Papers · WSJ, 2021',
     beat1SourceUrl: 'https://www.wsj.com/articles/facebook-knew-its-algorithm-was-pushing-extremism-but-hesitated-to-change-it-11631556885',
+    // Beat 2
+    beat2Label: 'THIS IS ABOUT YOU',
+    beat2Claim: 'Your feed was designed<br>to make you anxious.',
+    beat2Facts: [
+      { n: '1 in 3', label: 'Teenage girls said Instagram made their body image <em>worse</em>. Meta\'s own researchers found this. Their report was buried.', source: 'Wall Street Journal · Sep 2021', sourceUrl: 'https://www.wsj.com/articles/facebook-knows-instagram-is-toxic-for-teen-girls-company-documents-show-11631620739' },
+      { n: '40 min', label: 'The average user\'s daily time on Instagram. Each minute is logged, analysed, and sold as a targeting signal.', source: 'Frances Haugen testimony · US Senate, 2021', sourceUrl: 'https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00401.htm' },
+      { n: '6×', label: 'More reach for content that triggers anger or fear. The algorithm doesn\'t optimise for truth — it optimises for reaction.', source: 'MIT Media Lab · Science, 2018', sourceUrl: 'https://www.science.org/doi/10.1126/science.aap9559' }
+    ],
+    // Beat 3
+    beat3Label: 'WHAT IT COSTS DENMARK',
+    beat3Claim: 'While you scrolled,<br>your public sphere<br>was being bought.',
+    beat3NumClass: 'bo-fact-number-blue',
+    beat3Facts: [
+      { n: '€5.75M', label: 'Meta\'s EU lobbying spend in 2022 alone — working to weaken the Digital Services Act and block GDPR enforcement.', source: 'LobbyFacts EU · 2022', sourceUrl: 'https://www.lobbyfacts.eu/representative/facebook-ireland-limited/9395761370-45' },
+      { n: '−60%', label: 'Drop in Danish newspaper ad revenue over the decade Meta scaled here. Local newsrooms closed. Local politics went uncovered.', source: 'DR Nyheder · 2023', sourceUrl: 'https://www.dr.dk/nyheder/kultur/medierne-mister-millioner-til-facebook-og-google' },
+      { n: '€1.2B', label: 'GDPR fine — the largest ever issued. Meta paid it, then continued the same data transfers the following day.', source: 'Irish DPC · May 2023', sourceUrl: 'https://www.dataprotection.ie/en/news-media/press-releases/data-protection-commission-announces-conclusion-of-inquiry-into-meta-platforms-ireland-limited' }
+    ],
+    // Beat 4
+    beat4Label: 'OUTSIDE YOUR BUBBLE',
+    beat4Headline: 'The same algorithm<br>enabled a genocide.',
+    beat4QuoteText: '"Facebook was a useful instrument for those seeking to spread messages of hatred and incite violence."',
+    beat4QuoteAttr: '— UN Fact-Finding Mission on Myanmar · August 2018',
+    beat4Follow: 'In 2017 and 2018, the Rohingya genocide killed an estimated 10,000 people. A UN investigation found that Facebook\'s algorithmic amplification of hate speech was a contributing factor. Internal Meta researchers later confirmed the platform had been warned — and had not acted.',
+    beat4Sources: [
+      { text: 'UN Human Rights, 2018', url: 'https://www.ohchr.org/en/press-releases/2018/08/myanmar-un-fact-finding-mission-releases-its-full-account-grave-human-rights' },
+      { text: 'Reuters, 2018', url: 'https://www.reuters.com/article/us-myanmar-facebook/u-n-investigators-cite-facebook-role-in-myanmar-crisis-idUSKCN1GO2PN' },
+      { text: 'New York Times, 2018', url: 'https://www.nytimes.com/2018/10/15/technology/myanmar-facebook-genocide.html' }
+    ],
+    // Beat 5
+    beat5Q: 'How did we let<br>this happen?',
+    beat5Lines: ['Leaving felt complicated.', 'Everyone we knew was still there.', 'And one person felt too small to matter.', 'Until enough people thought the same thing.'],
+    // Beat 6
+    beat6Label: 'WHY IT WORKS',
+    beat6Headline: 'Every time you scroll,<br>you clock in.',
+    beat6Callout: 'Meta made €117 billion in ad revenue last year. Not from products. From you.',
+    beat6Chain: [
+      { icon: '👁️', title: 'You scroll. You watch. You react.', desc: 'Every second is logged. What stops you. What makes you angry. What keeps you up.', tag: '~€50 / year', tagClass: 'flowing' },
+      { icon: '🎯', title: 'Your profile is sold.', desc: 'To advertisers, to political campaigns, to health companies targeting your insecurities. You never see the transaction.', tag: '€117B total', tagClass: 'flowing' },
+      { icon: '✂️', title: 'You leave. You cut the wire.', desc: 'No scroll. No data. No profile. Nothing to sell. Your €50 stops flowing to them — and stops funding the lobbying, the expansion, the algorithm that comes next.', tag: '€0', tagClass: 'zero', isBreak: true }
+    ],
+    // Beat 7
+    beat7Label: 'YOUR GRAIN',
+    beat7MigrationTitle: 'Switching feels lonely. It isn\'t.',
+    beat7MigrationBody: 'Thousands of people in Copenhagen already made this move. The tutorial shows you how to bring your contacts, export your photos, and invite the people you care about. You don\'t leave them behind — you bring them with you.',
+    beat7CtaPrimary: 'Drop your grain — start the walkthrough →',
+    beat7CtaAlready: 'Already left? Share with someone still inside →',
+    alternatives: null,
     grainMonth: 312,
     grainGoal: 4500,
-    grainImpact: '~84,000 kr'
+    grainImpact: '~84,000 kr',
+    grainGoalText: "away from Meta's ad revenue"
+  },
+  wolt: {
+    // Beat 1
+    beat1Headline: 'Din levering koster mere\nend du tror.',
+    beat1Sub: 'Bag den nemme bestilling gemmer sig usikre ansættelsesforhold, kreativ skatteplanlægning — og et globalt selskab der sætter profit over sine bude.',
+    beat1Source: 'Fagbladet 3F · Sep 2023',
+    beat1SourceUrl: 'https://fagbladet3f.dk/tyder-paa-snyd-mange-wolt-bude-arbejder-mere-end-100-timer-om-ugen/',
+    // Beat 2
+    beat2Label: 'DET HANDLER OM DIG',
+    beat2Claim: 'Hvert klik finansierer<br>et ulige system.',
+    beat2Facts: [
+      { n: '35 kr', label: 'Gennemsnitlig leveringsgebyr per bestilling — herfra trækker Wolt sin andel, og budet får resten uden grundlæggende ansættelsesrettigheder.', source: 'Wolt-priser, 2024', sourceUrl: 'https://wolt.com' },
+      { n: '0 kr', label: 'Hvad et Wolt-bud modtager i sygedagpenge, feriepenge eller pension. De er klassificeret som selvstændige partnere, ikke lønmodtagere.', source: 'Fagbladet 3F · 2023', sourceUrl: 'https://fagbladet3f.dk/tyder-paa-snyd-mange-wolt-bude-arbejder-mere-end-100-timer-om-ugen/' },
+      { n: '300+', label: 'Bude der tilsyneladende arbejdede over 100 timer ugentligt ifølge Wolts egne data — et tegn på ulovlig kontodeling.', source: 'Fagbladet 3F · Sep 2023', sourceUrl: 'https://fagbladet3f.dk/tyder-paa-snyd-mange-wolt-bude-arbejder-mere-end-100-timer-om-ugen/' }
+    ],
+    // Beat 3
+    beat3Label: 'HVAD DET KOSTER DANMARK',
+    beat3Claim: 'Mens du venter på din mad,<br>betaler andre prisen.',
+    beat3NumClass: 'bo-fact-number-blue',
+    beat3Facts: [
+      { n: '8,1 mia.', label: 'Dollar Wolt blev opkøbt for af amerikanske DoorDash. Gebyrer du betaler strømmer nu til en global aktionærdrevet platform.', source: 'Financial Times · Nov 2022', sourceUrl: 'https://www.ft.com/content/doordash-wolt-acquisition' },
+      { n: '≠ løn', label: 'Skatterådet fastslog at bude skatteretligt er lønmodtagere — men Wolt fastholder at de ikke har ret til overenskomst, ferie eller pension.', source: 'Skatterådet · Maj 2023', sourceUrl: 'https://wageindicator.org/what-we-do/news-stories/gig-news/2023/may-2023-denmark-wolt-riders-are-employess-the-danish-tax-authority-says/' },
+      { n: '2025', label: 'Budbringerforeningen anlagde søgsmål ved Københavns Byret og kræver efterbetaling af feriepenge og ATP for alle bude. Sagen støttes af 3F.', source: 'Solidaritet.dk · Jan 2025', sourceUrl: 'https://solidaritet.dk/det-nye-arbejdsmarked-wolt-budes-kampe-i-koebenhavn/' }
+    ],
+    // Beat 4
+    beat4Label: 'UDENFOR DIN BOBLE',
+    beat4Headline: 'Bag bekvemmeligheden<br>gemmer sig et globalt mønster.',
+    beat4QuoteText: '"DoorDash-CEO Tony Xu modtog en kompensationspakke på ca. 2,8 milliarder kroner — mens hans bude leverer mad i regn og slud uden grundlæggende ansættelsesrettigheder."',
+    beat4QuoteAttr: '— Financial Times · November 2022',
+    beat4Follow: 'DoorDash opkøbte Wolt for 8,1 milliarder dollar i 2022. Siden opkøbet er Wolts gig-model blevet eksporteret globalt. I lande fra Finland til Japan klassificeres bude som selvstændige — en model der systematisk undgår arbejdsmarkedslovgivning og sikrer maksimal profit til aktionærerne.',
+    beat4Sources: [
+      { text: 'Financial Times · 2022', url: 'https://www.ft.com/content/doordash-wolt-acquisition' },
+      { text: 'Fagbladet 3F · 2023', url: 'https://fagbladet3f.dk/tyder-paa-snyd-mange-wolt-bude-arbejder-mere-end-100-timer-om-ugen/' }
+    ],
+    // Beat 5
+    beat5Q: 'Vi ved det godt.<br>Vi bestiller alligevel.',
+    beat5Lines: ['Det er så nemt.', 'Maden er der om 30 minutter.', 'Og én person kan vel ikke gøre en forskel.', 'Medmindre nok tænker det samme på én gang.'],
+    // Beat 6
+    beat6Label: 'SÅDAN VIRKER DET',
+    beat6Headline: 'Hver gang du bestiller,<br>finansierer du systemet.',
+    beat6Callout: 'Wolt-bude i Danmark har ingen feriepenge, ingen pension, ingen sygeløn. Systemet er designet til ikke at betale dem.',
+    beat6Chain: [
+      { icon: '📦', title: 'Du bestiller. Du betaler levering.', desc: 'Leveringsgebyret deles: en del til budet, en del til Wolt. Du ved ikke præcist hvad budet tjener.', tag: '~35 kr / ordre', tagClass: 'flowing' },
+      { icon: '🔄', title: 'Wolt tager sin andel.', desc: 'Platformen tjener på hvert klik — uden at bude har ret til overenskomst, sygdom eller ferie. Overskuddet går til DoorDash-aktionærerne.', tag: 'Globalt overskud', tagClass: 'flowing' },
+      { icon: '✂️', title: 'Du stopper. Du bryder kæden.', desc: 'Ingen ordre. Ingen gebyr. Og et signal til markedet om, at gig-modellen har en pris.', tag: '0 kr', tagClass: 'zero', isBreak: true }
+    ],
+    // Beat 7
+    beat7Label: 'DIT KORN',
+    beat7MigrationTitle: 'Skiftet er nemmere end du tror.',
+    beat7MigrationBody: 'Hungry.dk bruger bude ansat på overenskomst. Og de fleste restauranter tager bestillinger direkte — pengene går til dem, ikke til en platform.',
+    beat7CtaPrimary: 'Læg dit korn — se alternativer →',
+    beat7CtaAlready: 'Bestiller du ikke allerede? Del med en der gør →',
+    alternatives: null,
+    grainMonth: 187,
+    grainGoal: 2000,
+    grainImpact: '~36,000 kr',
+    grainGoalText: 'væk fra Wolts leveringsindtægter'
   }
 };
 
@@ -6229,6 +6557,8 @@ function openBoycottOnboarding(id) {
 
   // Content overrides
   var co = boContent[id] || boContent.meta;
+
+  // Beat 1
   var h = document.getElementById('bo1-headline');
   if (h) h.innerHTML = co.beat1Headline.replace('\n','<br>');
   var s = document.getElementById('bo1-subline');
@@ -6236,17 +6566,110 @@ function openBoycottOnboarding(id) {
   var src = document.getElementById('bo1-source');
   if (src) { src.textContent = co.beat1Source; src.href = co.beat1SourceUrl; }
 
+  // Beat 2
+  boInjectEl('bo2-label', co.beat2Label);
+  boInjectEl('bo2-claim', co.beat2Claim);
+  var f2 = document.getElementById('bo2-facts');
+  if (f2 && co.beat2Facts) {
+    f2.innerHTML = co.beat2Facts.map(function(f, i) {
+      return '<div class="bo-fact-block f'+(i+1)+'">'
+        + '<div class="bo-fact-number">'+f.n+'</div>'
+        + '<div class="bo-fact-label">'+f.label+'</div>'
+        + '<a class="bo-fact-source" href="'+f.sourceUrl+'" target="_blank">'+f.source+'</a>'
+        + '</div>';
+    }).join('');
+  }
+
+  // Beat 3
+  boInjectEl('bo3-label', co.beat3Label);
+  boInjectEl('bo3-claim', co.beat3Claim);
+  var f3 = document.getElementById('bo3-facts');
+  if (f3 && co.beat3Facts) {
+    var nc = co.beat3NumClass || '';
+    f3.innerHTML = co.beat3Facts.map(function(f, i) {
+      return '<div class="bo-fact-block f'+(i+1)+'">'
+        + '<div class="bo-fact-number '+nc+'">'+f.n+'</div>'
+        + '<div class="bo-fact-label">'+f.label+'</div>'
+        + '<a class="bo-fact-source" href="'+f.sourceUrl+'" target="_blank">'+f.source+'</a>'
+        + '</div>';
+    }).join('');
+  }
+
+  // Beat 4
+  boInjectEl('bo4-label', co.beat4Label);
+  boInjectEl('bo4-headline', co.beat4Headline);
+  boInjectEl('bo4-quote-text', co.beat4QuoteText);
+  boInjectEl('bo4-quote-attr', co.beat4QuoteAttr);
+  boInjectEl('bo4-follow', co.beat4Follow);
+  var s4 = document.getElementById('bo4-sources');
+  if (s4 && co.beat4Sources) {
+    s4.innerHTML = co.beat4Sources.map(function(s) {
+      return '<a class="bo-world-src" href="'+s.url+'" target="_blank">'+s.text+'</a>';
+    }).join('');
+  }
+
+  // Beat 5
+  boInjectEl('bo5-q', co.beat5Q);
+  if (co.beat5Lines) {
+    ['bo5-l1','bo5-l2','bo5-l3','bo5-l4'].forEach(function(elId, i) {
+      boInjectEl(elId, co.beat5Lines[i] || '');
+    });
+  }
+
+  // Beat 6
+  boInjectEl('bo6-label', co.beat6Label);
+  boInjectEl('bo6-headline', co.beat6Headline);
+  boInjectEl('bo6-callout', co.beat6Callout);
+  var ch = document.getElementById('bo6-chain');
+  if (ch && co.beat6Chain) {
+    ch.innerHTML = co.beat6Chain.map(function(step, i) {
+      var breakClass = step.isBreak ? ' bo-chain-step-break' : '';
+      var iconBreak = step.isBreak ? ' break' : '';
+      var titleBreak = step.isBreak ? ' break' : '';
+      var descBreak = step.isBreak ? ' break' : '';
+      var html = '';
+      if (i > 0) html += '<div class="bo-chain-arrow">↓</div>';
+      html += '<div class="bo-chain-step'+breakClass+'">'
+        + '<div class="bo-chain-step-icon'+iconBreak+'">'+step.icon+'</div>'
+        + '<div class="bo-chain-step-body">'
+        + '<div class="bo-chain-step-title'+titleBreak+'">'+step.title+'</div>'
+        + '<div class="bo-chain-step-desc'+descBreak+'">'+step.desc+'</div>'
+        + '</div>'
+        + '<div class="bo-chain-step-tag '+step.tagClass+'">'+step.tag+'</div>'
+        + '</div>';
+      return html;
+    }).join('');
+  }
+
+  // Beat 7
+  boInjectEl('bo7-label', co.beat7Label || 'YOUR GRAIN');
+  var mig = document.getElementById('bo7-migration');
+  if (mig && co.beat7MigrationTitle) {
+    mig.innerHTML = '<div class="bo-migration-title">'+co.beat7MigrationTitle+'</div>'
+      + '<div class="bo-migration-body">'+co.beat7MigrationBody+'</div>';
+  }
+  var ctaP = document.getElementById('bo7-cta-primary');
+  if (ctaP && co.beat7CtaPrimary) ctaP.textContent = co.beat7CtaPrimary;
+  var ctaA = document.getElementById('bo7-cta-already');
+  if (ctaA && co.beat7CtaAlready) ctaA.textContent = co.beat7CtaAlready;
+
   // Grain setup
   _boGrainTarget = co.grainMonth || 312;
   var goalEl = document.getElementById('bo-grain-goal');
   if (goalEl) {
-    goalEl.innerHTML = '<strong>'+_boGrainTarget+' grains</strong> dropped this month in Copenhagen.<br>At '+(co.grainGoal||4500).toLocaleString()+' we redirect <strong>'+(co.grainImpact||'~84,000 kr')+'</strong> away from Meta\'s ad revenue.';
+    var grainWord = id === 'wolt' ? 'korn' : 'grains';
+    var cityWord = id === 'wolt' ? 'i København' : 'dropped this month in Copenhagen';
+    var redirectWord = id === 'wolt' ? 'redirecter vi' : 'we redirect';
+    goalEl.innerHTML = '<strong>'+_boGrainTarget+' '+grainWord+'</strong> '+cityWord+'.<br>'
+      + 'Ved '+(co.grainGoal||4500).toLocaleString()+' '+redirectWord+' <strong>'+(co.grainImpact||'~84,000 kr')+'</strong> '+(co.grainGoalText||"away from Meta's ad revenue")+'.';
   }
 
-  // Populate alts row with real SVG logos from metaAlternatives
+  // Populate alts row
+  var alts = (co.alternatives && co.alternatives.length) ? co.alternatives
+    : (id === 'wolt' ? woltAlternatives : (typeof metaAlternatives !== 'undefined' ? metaAlternatives : []));
   var altsRow = document.getElementById('bo-alts-row');
-  if (altsRow && typeof metaAlternatives !== 'undefined') {
-    altsRow.innerHTML = metaAlternatives.map(function(a) {
+  if (altsRow) {
+    altsRow.innerHTML = alts.map(function(a) {
       var logoHtml = a.logoImg
         ? '<img src="'+a.logoImg+'" style="width:32px;height:32px;object-fit:contain;display:block;margin:0 auto 5px;">'
         : '<div style="font-size:22px;margin-bottom:5px;">'+a.emoji+'</div>';
@@ -6261,8 +6684,8 @@ function openBoycottOnboarding(id) {
   // Reset position (no animation)
   boGoToCard(0, false);
 
-  // Inject SVG backgrounds into beats 3 and 4
-  boInjectBackgrounds();
+  // Inject background images (re-injectable per company)
+  boInjectBackgrounds(id);
 
   // 3-second chrome lock on beat 1
   var chrome = document.getElementById('bo-chrome');
@@ -6273,28 +6696,31 @@ function openBoycottOnboarding(id) {
   document.body.style.overflow = 'hidden';
 }
 
-function boInjectBackgrounds() {
-  var bg2 = document.querySelector('.bo-card-2 .bo-card-bg');
-  if (bg2 && !bg2.dataset.injected) {
-    bg2.dataset.injected = '1';
-    bg2.style.backgroundImage = 'url("img/img-jpeg-6.jpg")';
-    bg2.style.backgroundSize = 'cover';
-    bg2.style.backgroundPosition = 'center 40%';
-  }
-  var bg3 = document.querySelector('.bo-card-3 .bo-card-bg');
-  if (bg3 && !bg3.dataset.injected) {
-    bg3.dataset.injected = '1';
-    bg3.style.backgroundImage = 'url("img/img-jpeg-7.jpg")';
-    bg3.style.backgroundSize = 'cover';
-    bg3.style.backgroundPosition = 'center 30%';
-  }
-  var bg4 = document.querySelector('.bo-card-4 .bo-card-bg');
-  if (bg4 && !bg4.dataset.injected) {
-    bg4.dataset.injected = '1';
-    bg4.style.backgroundImage = 'url("img/img-jpeg-8.jpg")';
-    bg4.style.backgroundSize = 'cover';
-    bg4.style.backgroundPosition = 'center 40%';
-  }
+function boInjectEl(id, html) {
+  var el = document.getElementById(id);
+  if (el && html !== undefined) el.innerHTML = html;
+}
+
+var _boBgImages = {
+  meta:  { bg2: 'img/img-jpeg-6.jpg', pos2: 'center 40%', bg3: 'img/img-jpeg-7.jpg', pos3: 'center 30%', bg4: 'img/img-jpeg-8.jpg', pos4: 'center 40%' },
+  wolt:  { bg2: 'img/img-jpeg-4.jpg', pos2: 'center 50%', bg3: 'img/img-jpeg-5.jpg', pos3: 'center 40%', bg4: 'img/img-jpeg-3.jpg', pos4: 'center 30%' }
+};
+
+function boInjectBackgrounds(id) {
+  var imgs = _boBgImages[id] || _boBgImages.meta;
+  var pairs = [
+    { sel: '.bo-card-2 .bo-card-bg', img: imgs.bg2, pos: imgs.pos2 },
+    { sel: '.bo-card-3 .bo-card-bg', img: imgs.bg3, pos: imgs.pos3 },
+    { sel: '.bo-card-4 .bo-card-bg', img: imgs.bg4, pos: imgs.pos4 }
+  ];
+  pairs.forEach(function(p) {
+    var el = document.querySelector(p.sel);
+    if (!el) return;
+    el.dataset.injected = '1';
+    el.style.backgroundImage = 'url("'+p.img+'")';
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = p.pos;
+  });
 }
 
 function closeBoycottOnboarding() {
