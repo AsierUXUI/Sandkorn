@@ -8,7 +8,7 @@ import { companies } from '@/lib/data/companies'
 import type { Category } from '@/types/company'
 
 const CATS: { value: Category | 'all'; label: string }[] = [
-  { value: 'all',     label: 'Alle' },
+  { value: 'all',     label: 'All' },
   { value: 'social',  label: 'Social' },
   { value: 'tech',    label: 'Tech' },
   { value: 'retail',  label: 'Retail' },
@@ -42,7 +42,7 @@ export default function CompaniesPage() {
       {/* Summary line */}
       <div className="px-5 pb-2">
         <p className="text-dim font-mono text-[10px] tracking-wide">
-          {filtered.length} VIRKSOMHEDER
+          {filtered.length} COMPANIES
         </p>
       </div>
 

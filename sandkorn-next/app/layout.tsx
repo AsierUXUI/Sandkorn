@@ -30,12 +30,12 @@ const caveat = Caveat({
 
 export const metadata: Metadata = {
   title: 'Sandkorn',
-  description: 'Danish digital activism og bojkot platform',
+  description: 'Danish digital activism and boycott platform',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="da">
+    <html lang="en">
       <body className={`${outfit.variable} ${syne.variable} ${syneMono.variable} ${caveat.variable} font-sans`}>
         <DesktopNav />
         <main className="md:pt-16">
