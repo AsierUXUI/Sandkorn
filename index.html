@@ -547,6 +547,7 @@ textarea.input{min-height:80px;resize:none}
     <button class="dossier-tab active" onclick="switchDossierTab('boycott',0,this)">WHAT WE FOUND</button>
     <button class="dossier-tab" onclick="switchDossierTab('boycott',1,this)">WHO OWNS IT</button>
     <button class="dossier-tab" onclick="switchDossierTab('boycott',2,this)">MIGRATE</button>
+    <button class="dossier-tab" id="db-tab-journey-btn" onclick="switchDossierTab('boycott',3,this)">JOURNEY</button>
   </div>
 
   <!-- Scrollable content -->
@@ -668,7 +669,11 @@ textarea.input{min-height:80px;resize:none}
     </div>
 
     <!-- TAB 2: Migrate -->
-    <div class="dossier-tab-panel" id="db-panel-2" id="dtab-local">
+    <div class="dossier-tab-panel" id="db-panel-2"></div>
+
+    <!-- TAB 3: Journey -->
+    <div class="dossier-tab-panel" id="db-panel-3">
+      <div id="db-journey-root" style="padding:4px 0 32px;"></div>
     </div>
 
   </div>
@@ -2391,9 +2396,18 @@ function openDossier(id) {
   // CTA btn
   const ctaBtn = document.getElementById('db-cta-btn');
   if (ctaBtn) {
-    ctaBtn.textContent = 'Start Boycott 🌾';
-    ctaBtn.onclick = () => openBoycottTutorial(c.id);
+    if (isCommitted(c.id)) {
+      ctaBtn.textContent = 'Din rejse →';
+      ctaBtn.onclick = () => switchDossierTabTo('boycott', 3);
+    } else {
+      ctaBtn.textContent = 'Start Boycott 🌾';
+      ctaBtn.onclick = () => openBoycottTutorial(c.id);
+    }
   }
+
+  // Journey tab
+  checkSettleMilestones(c.id);
+  renderJourneyTab(c.id);
 
   // Reset tabs to first
   switchDossierTabTo('boycott', 0);
@@ -3474,6 +3488,309 @@ function setCommitted(id, val) {
 }
 
 
+
+// ══════════════════════════════════════════
+// JOURNEY ENGINE
+// ══════════════════════════════════════════
+
+var JOURNEY_PHASES = [
+  {
+    key: 'grain',
+    label: 'FASE 1',
+    title: 'Drop dit korn',
+    icon: '🌾',
+    desc: 'Du har sagt det højt. Det er det sværeste. At forpligte sig — også selvom systemet er designet til at gøre det nemt at blive.',
+    actionLabel: null, // auto-complete on commit
+    actionFn: null
+  },
+  {
+    key: 'cut',
+    label: 'FASE 2',
+    title: 'Klip tråden',
+    icon: '✂️',
+    desc: 'Slet din konto. Afmeld dit abonnement. Det tager 10 minutter — og det er præcis det, de satser på, at du aldrig finder.',
+    actionLabel: 'Start sletteguide →',
+    actionFn: function(id) { closeModal('modal-journey-phase'); openBoycottTutorial(id); }
+  },
+  {
+    key: 'clean',
+    label: 'FASE 3',
+    title: 'Ryd dine data',
+    icon: '📄',
+    desc: 'En GDPR-anmodning tvinger dem til at slette alt — annonceprofil, skyggeprofil, delte data. De skal svare inden 30 dage.',
+    actionLabel: 'Generer GDPR-mail →',
+    actionFn: function(id) { closeModal('modal-journey-phase'); showScreen('screen-gdpr-draft'); }
+  },
+  {
+    key: 'settle',
+    label: 'FASE 4',
+    title: 'Bliv i det',
+    icon: '🌱',
+    desc: 'De første 30 dage er de sværeste. Alternativerne er der — de er bare anderledes. Hvert korn du lægger, giver nye vaner rod.',
+    actionLabel: null, // auto after 30d
+    actionFn: null
+  },
+  {
+    key: 'spread',
+    label: 'FASE 5',
+    title: 'Tag nogen med',
+    icon: '🤝',
+    desc: 'Kollektiv boykot kræver kollektiv handling. Én person, der fortæller to andre, ændrer matematikken fuldstændigt.',
+    actionLabel: 'Inviter nogen →',
+    actionFn: function(id) { closeModal('modal-journey-phase'); completePhase(id, 'spread'); openModal('modal-invite'); }
+  }
+];
+
+// Per-company phase overrides (replace default phases for specific companies)
+var JOURNEY_OVERRIDES = {
+  wolt: {
+    clean: {
+      title: 'Prøv alternativet',
+      icon: '🍽️',
+      desc: 'Hungry.dk ansætter bude på overenskomst. De fleste restauranter tager også direkte bestillinger — pengene går til dem, ikke til en platform.',
+      actionLabel: 'Se alternativer →',
+      actionFn: function(id) { closeModal('modal-journey-phase'); switchDossierTabTo('boycott', 2); }
+    }
+  }
+};
+
+function getJourney(id) {
+  try {
+    var raw = localStorage.getItem('sk_journey_' + id);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  // Init fresh
+  var phases = {};
+  JOURNEY_PHASES.forEach(function(p) { phases[p.key] = { completedAt: null }; });
+  // Auto-complete phase 1 if already committed
+  if (isCommitted(id)) phases.grain.completedAt = Date.now();
+  return { phases: phases };
+}
+
+function saveJourney(id, data) {
+  try { localStorage.setItem('sk_journey_' + id, JSON.stringify(data)); } catch(e) {}
+}
+
+function completePhase(id, key) {
+  var j = getJourney(id);
+  if (j.phases[key] && !j.phases[key].completedAt) {
+    j.phases[key].completedAt = Date.now();
+    saveJourney(id, j);
+    // Show micro-toast
+    var phaseData = JOURNEY_PHASES.find(function(p) { return p.key === key; });
+    if (phaseData) showToast(phaseData.icon + ' ' + phaseData.title + ' — fuldført');
+    // Re-render if dossier is open for this company
+    renderJourneyTab(id);
+  }
+}
+
+function getDaysWithout(id) {
+  var j = getJourney(id);
+  if (!j.phases.cut || !j.phases.cut.completedAt) return 0;
+  return Math.floor((Date.now() - j.phases.cut.completedAt) / 86400000);
+}
+
+function checkSettleMilestones(id) {
+  var j = getJourney(id);
+  if (!j.phases.cut || !j.phases.cut.completedAt) return;
+  var days = getDaysWithout(id);
+  // Auto-complete settle at 30 days
+  if (days >= 30 && !j.phases.settle.completedAt) {
+    j.phases.settle.completedAt = Date.now();
+    saveJourney(id, j);
+    showToast('🌱 30 dage uden — du er nået til fase 4!');
+  }
+  // Streak milestone toasts (only once each, tracked in journey)
+  j.milestones = j.milestones || {};
+  var milestones = [{d:7,msg:'🌾 En uge inde. Det er rigtigt.'}];
+  milestones.forEach(function(m) {
+    if (days >= m.d && !j.milestones['d'+m.d]) {
+      j.milestones['d'+m.d] = true;
+      saveJourney(id, j);
+      showToast(m.msg);
+    }
+  });
+}
+
+function getActivePhaseKey(id) {
+  var j = getJourney(id);
+  for (var i = 0; i < JOURNEY_PHASES.length; i++) {
+    var p = JOURNEY_PHASES[i];
+    if (!j.phases[p.key] || !j.phases[p.key].completedAt) return p.key;
+  }
+  return null; // all done
+}
+
+function renderJourneyTab(id) {
+  var root = document.getElementById('db-journey-root');
+  if (!root) return;
+  var j = getJourney(id);
+  var overrides = JOURNEY_OVERRIDES[id] || {};
+  var activeKey = getActivePhaseKey(id);
+  var days = getDaysWithout(id);
+
+  var html = '<div style="padding:2px 0 0;">';
+
+  JOURNEY_PHASES.forEach(function(pBase, idx) {
+    var p = Object.assign({}, pBase, overrides[pBase.key] || {});
+    var phaseData = j.phases[p.key] || { completedAt: null };
+    var isDone    = !!phaseData.completedAt;
+    var isActive  = p.key === activeKey;
+    var isPending = !isDone && !isActive;
+
+    // Node color / style
+    var nodeStyle = isDone
+      ? 'background:var(--teal);border:2px solid var(--teal);'
+      : isActive
+        ? 'background:white;border:2.5px solid var(--teal);animation:journeyPulse 1.8s ease-in-out infinite;'
+        : 'background:var(--border);border:2px solid var(--border2);';
+
+    // Connector line (not shown for last item)
+    var lineHtml = idx < JOURNEY_PHASES.length - 1
+      ? '<div style="width:2px;height:22px;margin-left:11px;background:' + (isDone ? 'var(--teal)' : 'var(--border2)') + ';"></div>'
+      : '';
+
+    // Streak counter for settle phase
+    var streakHtml = '';
+    if (p.key === 'settle' && days > 0 && !isDone) {
+      streakHtml = '<span style="font-size:11px;color:var(--teal2);margin-left:6px;">🌾 ' + days + ' dage</span>';
+    }
+
+    // Status chip
+    var chipText  = isDone ? 'FULDFØRT' : isActive ? 'NU' : '';
+    var chipStyle = isDone
+      ? 'background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border);'
+      : isActive
+        ? 'background:var(--text);color:white;'
+        : 'display:none;';
+
+    // Completion date
+    var doneHtml = '';
+    if (isDone && phaseData.completedAt) {
+      var d = new Date(phaseData.completedAt);
+      doneHtml = '<div class="mono" style="font-size:10px;color:var(--dim);margin-top:2px;">Fuldført ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear() + '</div>';
+    }
+
+    // Tagline shown under title when pending/active
+    var taglineHtml = '';
+    if (!isDone) {
+      taglineHtml = '<div style="font-size:12px;color:var(--dim);margin-top:2px;line-height:1.5;">'
+        + p.desc.split('.')[0] + '.</div>';
+    }
+
+    // CTA inside row (only for active phase)
+    var ctaHtml = '';
+    if (isActive && p.actionLabel) {
+      ctaHtml = '<button onclick="openJourneyPhaseModal(\'' + id + '\',\'' + p.key + '\')" class="btn btn-teal" style="margin-top:10px;width:100%;font-size:13px;">' + p.actionLabel + '</button>';
+    } else if (isActive && !p.actionLabel) {
+      // Auto phase (grain or settle) — show info CTA
+      ctaHtml = '<button onclick="openJourneyPhaseModal(\'' + id + '\',\'' + p.key + '\')" style="margin-top:10px;width:100%;background:none;border:1px solid var(--border);border-radius:10px;padding:9px;font-size:12px;color:var(--mid);cursor:pointer;">Hvad sker der her? →</button>';
+    }
+
+    var rowOpacity = isPending ? '0.5' : '1';
+
+    html += '<div style="display:flex;gap:13px;cursor:pointer;opacity:' + rowOpacity + ';" onclick="openJourneyPhaseModal(\'' + id + '\',\'' + p.key + '\')">'
+      + '<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:2px;">'
+      +   '<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;' + nodeStyle + '">'
+      +     (isDone ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : '')
+      +   '</div>'
+      +   lineHtml
+      + '</div>'
+      + '<div style="flex:1;padding-bottom:' + (idx < JOURNEY_PHASES.length-1 ? '4' : '0') + 'px;">'
+      +   '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">'
+      +     '<div style="display:flex;align-items:center;gap:6px;">'
+      +       '<span style="font-size:18px;">' + p.icon + '</span>'
+      +       '<div class="syne" style="font-size:14px;font-weight:700;">' + p.title + '</div>'
+      +       streakHtml
+      +     '</div>'
+      +     '<div class="mono" style="font-size:9px;padding:3px 7px;border-radius:20px;letter-spacing:.4px;' + chipStyle + '">' + chipText + '</div>'
+      +   '</div>'
+      +   doneHtml
+      +   taglineHtml
+      +   ctaHtml
+      + '</div>'
+      + '</div>';
+
+    if (idx < JOURNEY_PHASES.length - 1) {
+      // spacing between rows handled by lineHtml
+    }
+  });
+
+  html += '</div>';
+  root.innerHTML = html;
+
+  // Update journey tab button badge
+  var tabBtn = document.getElementById('db-tab-journey-btn');
+  if (tabBtn) {
+    var doneCount = JOURNEY_PHASES.filter(function(p) {
+      return j.phases[p.key] && j.phases[p.key].completedAt;
+    }).length;
+    tabBtn.innerHTML = 'JOURNEY <span style="background:var(--teal);color:white;border-radius:9px;font-size:9px;padding:1px 5px;margin-left:3px;font-family:\'Syne Mono\',monospace;">' + doneCount + '/5</span>';
+  }
+}
+
+function openJourneyPhaseModal(id, key) {
+  var j = getJourney(id);
+  var overrides = JOURNEY_OVERRIDES[id] || {};
+  var pBase = JOURNEY_PHASES.find(function(p) { return p.key === key; });
+  if (!pBase) return;
+  var p = Object.assign({}, pBase, overrides[key] || {});
+  var phaseData = j.phases[key] || { completedAt: null };
+  var isDone   = !!phaseData.completedAt;
+  var activeKey = getActivePhaseKey(id);
+  var isActive = key === activeKey;
+
+  document.getElementById('jpm-icon').textContent = p.icon;
+  document.getElementById('jpm-phase-label').textContent = p.label;
+  document.getElementById('jpm-title').textContent = p.title;
+  document.getElementById('jpm-desc').textContent = p.desc;
+
+  // Status chip
+  var chip = document.getElementById('jpm-status-chip');
+  if (isDone) {
+    chip.textContent = 'FULDFØRT ✓';
+    chip.style.cssText = 'font-size:10px;padding:4px 9px;border-radius:20px;letter-spacing:.5px;background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border);';
+  } else if (isActive) {
+    chip.textContent = 'AKTIV';
+    chip.style.cssText = 'font-size:10px;padding:4px 9px;border-radius:20px;letter-spacing:.5px;background:var(--text);color:white;';
+  } else {
+    chip.textContent = 'KOMMER';
+    chip.style.cssText = 'font-size:10px;padding:4px 9px;border-radius:20px;letter-spacing:.5px;background:var(--border);color:var(--dim);';
+  }
+
+  // Done stamp
+  var stamp = document.getElementById('jpm-done-stamp');
+  var dateEl = document.getElementById('jpm-done-date');
+  if (isDone && phaseData.completedAt) {
+    var d = new Date(phaseData.completedAt);
+    dateEl.textContent = '✓ Fuldført ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+    stamp.style.display = '';
+  } else {
+    stamp.style.display = 'none';
+  }
+
+  // CTA
+  var cta = document.getElementById('jpm-cta');
+  if (p.actionLabel && p.actionFn) {
+    cta.style.display = '';
+    cta.textContent = p.actionLabel;
+    cta.onclick = function() { p.actionFn(id); };
+  } else if (isActive && !p.actionFn) {
+    // Auto-phases show context, no button
+    cta.style.display = 'none';
+  } else if (!isDone && !isActive) {
+    cta.style.display = '';
+    cta.textContent = 'Start alligevel →';
+    cta.style.background = 'none';
+    cta.style.border = '1px solid var(--border)';
+    cta.style.color = 'var(--mid)';
+    cta.onclick = p.actionFn ? function() { p.actionFn(id); } : null;
+  } else {
+    cta.style.display = 'none';
+  }
+
+  openModal('modal-journey-phase');
+}
 
 // ══════════════════════════════════════════
 // PILE CTA — join vs share
@@ -4823,18 +5140,19 @@ function sendGdprEmail() {
 function confirmSent() {
   document.getElementById('gdpr-actions').style.display = 'none';
   document.getElementById('gdpr-sent-confirm').style.display = 'block';
-  // Track status
   try {
     const status = JSON.parse(localStorage.getItem('sk_boycott_status') || '{}');
     status[_bconfCompanyId] = { method: 'gdpr', sentAt: Date.now(), status: 'sent' };
     localStorage.setItem('sk_boycott_status', JSON.stringify(status));
   } catch(e) {}
+  completePhase(_bconfCompanyId, 'clean');
 }
 
 function finishBoycott() {
   // Record commitment + drop grain
   if (_bconfCompanyId) {
     setCommitted(_bconfCompanyId, true);
+    completePhase(_bconfCompanyId, 'grain');
     try {
       const acts = JSON.parse(localStorage.getItem('sk_acted_on') || '[]');
       if (!acts.includes(_bconfCompanyId)) { acts.push(_bconfCompanyId); localStorage.setItem('sk_acted_on', JSON.stringify(acts)); }
@@ -5165,9 +5483,12 @@ function openDeletionPage() {
 
 function completionYes() {
   closeModal('modal-completion');
-  // award badge + update counter
   const c = companies.find(x=>x.id===_tutorialCompanyId)||companies[0];
-  if (c) { c.deletions = (c.deletions||0) + 1; renderBoycottCarousel(); }
+  if (c) {
+    c.deletions = (c.deletions||0) + 1;
+    renderBoycottCarousel();
+    completePhase(c.id, 'cut');
+  }
   openModal('modal-badge');
   dropGrainAnimation();
 }
@@ -5304,6 +5625,32 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 </div>
 
+<!-- ═══ JOURNEY PHASE MODAL ═══ -->
+<div class="modal-overlay" id="modal-journey-phase" onclick="if(event.target===this)closeModal('modal-journey-phase')">
+  <div class="modal-sheet" style="padding:0 0 40px;">
+    <!-- drag handle -->
+    <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 20px;"></div>
+    <div style="padding:0 22px;">
+      <!-- icon + status row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div id="jpm-icon" style="font-size:44px;line-height:1;"></div>
+        <div id="jpm-status-chip" class="mono" style="font-size:10px;padding:4px 9px;border-radius:20px;letter-spacing:.5px;"></div>
+      </div>
+      <!-- phase name + label -->
+      <div id="jpm-phase-label" class="mono" style="font-size:10px;color:var(--dim);letter-spacing:.8px;margin-bottom:4px;"></div>
+      <div id="jpm-title" class="syne" style="font-size:18px;font-weight:800;margin-bottom:10px;line-height:1.25;"></div>
+      <div id="jpm-desc" style="font-size:13px;color:var(--mid);line-height:1.75;margin-bottom:20px;"></div>
+      <!-- completion stamp -->
+      <div id="jpm-done-stamp" style="display:none;background:var(--teal-bg);border:1px solid var(--teal-border);border-radius:10px;padding:10px 13px;margin-bottom:18px;">
+        <div class="mono" style="font-size:10px;color:var(--teal2);letter-spacing:.4px;" id="jpm-done-date"></div>
+      </div>
+      <!-- CTA -->
+      <button id="jpm-cta" class="btn btn-teal" style="width:100%;margin-bottom:10px;display:none;"></button>
+      <button onclick="closeModal('modal-journey-phase')" style="width:100%;background:none;border:none;font-size:13px;color:var(--dim);padding:6px;cursor:pointer;">Luk</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ BADGE MODAL ═══ -->
 <div class="modal-overlay" id="modal-badge">
 <div class="modal-sheet" style="padding-bottom:48px;text-align:center;">
@@ -5340,6 +5687,10 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 @keyframes badgePop {
   0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1}
+}
+@keyframes journeyPulse {
+  0%,100%{box-shadow:0 0 0 0 rgba(26,122,106,0.4)}
+  50%{box-shadow:0 0 0 5px rgba(26,122,106,0)}
 }
 
 /* ═══ SHARED DOSSIER SHELL ═══ */
