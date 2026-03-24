@@ -31,7 +31,7 @@ function daysLeft(endDate: string): number {
 }
 
 function formatGrains(n: number): string {
-  return n.toLocaleString('da-DK')
+  return n.toLocaleString('en-DK')
 }
 
 export default function HomePage() {
@@ -40,7 +40,7 @@ export default function HomePage() {
   if (!activeBoycott || !activeCompany) {
     return (
       <div className="min-h-screen flex items-center justify-center text-dim font-mono text-[11px]">
-        Ingen aktiv bojkot denne måned.
+        No active boycott this month.
       </div>
     )
   }
@@ -49,9 +49,9 @@ export default function HomePage() {
   const progressPct = Math.min(100, Math.round((activeBoycott.grains / activeBoycott.goal) * 100))
 
   const scopeData = {
-    you:  { n: formatGrains(activeBoycott.yourGrains), label: 'korn du har lagt', grains: activeBoycott.yourGrains },
-    city: { n: formatGrains(activeBoycott.cityGrains), label: 'korn i din by',    grains: Math.min(activeBoycott.cityGrains, 250) },
-    dk:   { n: formatGrains(activeBoycott.grains),     label: 'korn i Danmark',   grains: Math.min(activeBoycott.grains, 420) },
+    you:  { n: formatGrains(activeBoycott.yourGrains), label: "grains you've added",  grains: activeBoycott.yourGrains },
+    city: { n: formatGrains(activeBoycott.cityGrains), label: 'grains in your city', grains: Math.min(activeBoycott.cityGrains, 250) },
+    dk:   { n: formatGrains(activeBoycott.grains),     label: 'grains in Denmark',   grains: Math.min(activeBoycott.grains, 420) },
   }
   const data = scopeData[scope]
 
@@ -79,11 +79,11 @@ export default function HomePage() {
           <div className="px-3.5 py-2.5 border-b border-border">
             <div className="flex justify-between items-end mb-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="font-mono text-[9px] text-dim tracking-[.5px]">MÅNEDENS BOJKOT</span>
+                <span className="font-mono text-[9px] text-dim tracking-[.5px]">THIS MONTH'S BOYCOTT</span>
                 <div className="w-[5px] h-[5px] rounded-full bg-[#e05050]" />
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[9px] text-teal font-semibold">{remaining} dage tilbage</span>
+                <span className="font-mono text-[9px] text-teal font-semibold">{remaining} days left</span>
                 {/* Scope switcher */}
                 <div className="flex border border-border rounded-[6px] overflow-hidden bg-bg">
                   {(['you', 'city', 'dk'] as Scope[]).map((s) => (
@@ -94,7 +94,7 @@ export default function HomePage() {
                         scope === s ? 'bg-text text-white' : 'bg-transparent text-dim'
                       }`}
                     >
-                      {s === 'you' ? 'DIG' : s === 'city' ? 'CPH' : 'DK'}
+                      {s === 'you' ? 'YOU' : s === 'city' ? 'CPH' : 'DK'}
                     </button>
                   ))}
                 </div>
@@ -108,10 +108,10 @@ export default function HomePage() {
             <div className="flex justify-between mt-1">
               <span className="font-syne font-bold text-[12px]">
                 {formatGrains(activeBoycott.grains)}{' '}
-                <span className="font-mono font-normal text-[9px] text-dim">korn lagt</span>
+                <span className="font-mono font-normal text-[9px] text-dim">grains added</span>
               </span>
               <span className="font-mono text-[8px] text-dim pt-0.5">
-                {progressPct}% af mål · goal {formatGrains(activeBoycott.goal)}
+                {progressPct}% of goal · {formatGrains(activeBoycott.goal)}
               </span>
             </div>
           </div>
@@ -169,9 +169,9 @@ export default function HomePage() {
             className="px-4 py-3.5 bg-[#1a1a1a] flex items-center justify-between cursor-pointer border-t-2 border-teal no-underline hover:bg-[#2a2a2a] transition-colors"
           >
             <div>
-              <div className="text-[15px] font-bold text-white tracking-tight">Deltag i bojkotten →</div>
+              <div className="text-[15px] font-bold text-white tracking-tight">Join the boycott →</div>
               <div className="font-mono text-[10px] text-white/45 mt-0.5">
-                Bojkot {activeCompany.name} denne måned · se hvorfor det betyder noget
+                Boycott {activeCompany.name} this month · see why it matters
               </div>
             </div>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="2" strokeLinecap="round">
@@ -185,11 +185,11 @@ export default function HomePage() {
           <>
             <div className="px-5 mt-5 mb-2">
               <div className="flex items-center justify-between mb-0.5">
-                <span className="font-syne font-bold text-[15px]">Vælg næste bojkot</span>
+                <span className="font-syne font-bold text-[15px]">Vote for next boycott</span>
                 <span className="font-mono text-[9px] text-teal tracking-[.3px]">APRIL</span>
               </div>
               <p className="font-mono text-[9px] text-dim leading-snug">
-                Hvem boycotter vi næste måned? Klik for at læse mere — afstemningen åbner 25. marts.
+                Who do we boycott next month? Click to read more — voting opens March 25.
               </p>
             </div>
             <div className="mx-5 bg-white border border-border rounded-2xl overflow-hidden mb-5">
@@ -207,7 +207,7 @@ export default function HomePage() {
 
         {/* ── More companies section ── */}
         <div className="px-5 mt-1 mb-2 flex items-center justify-between">
-          <span className="font-syne font-bold text-[15px]">Andre virksomheder</span>
+          <span className="font-syne font-bold text-[15px]">More companies</span>
           <Link href="/companies" className="font-mono text-[10px] text-teal no-underline tracking-[.4px]">
             SE ALLE
           </Link>

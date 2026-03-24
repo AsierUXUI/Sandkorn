@@ -33,9 +33,9 @@ export function AlternativeCard({ alt, divider = true }: AlternativeCardProps) {
         <p className="text-[12px] text-mid leading-relaxed mb-1.5">{alt.description}</p>
         {/* Tags */}
         <div className="flex gap-1 flex-wrap">
-          {alt.danish && <Tag label="Dansk" color="teal" />}
+          {alt.danish && <Tag label="Danish" color="teal" />}
           {alt.eu && !alt.danish && <Tag label="EU" color="teal" />}
-          {alt.free && <Tag label="Gratis" color="default" />}
+          {alt.free && <Tag label="Free" color="default" />}
           {alt.openSource && <Tag label="Open source" color="default" />}
         </div>
       </div>

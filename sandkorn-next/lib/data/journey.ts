@@ -21,8 +21,6 @@ export const JOURNEY_PHASES: JourneyPhase[] = [
     icon: '✂️',
     description:
       "Remove it from your device. It takes 10 minutes — and that's exactly what they're counting on you never finding.",
-    actionLabel: 'Start deletion guide →',
-    actionHref: '../',
     mockCount: 8300,
   },
   {

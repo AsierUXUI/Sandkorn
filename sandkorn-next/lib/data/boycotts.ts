@@ -10,7 +10,7 @@ export const boycotts: Boycott[] = [
     grains: 312,
     cityGrains: 187,
     yourGrains: 1,
-    tagline: 'Din levering koster mere end du tror',
+    tagline: 'Your delivery costs more than you think',
   },
 ]
 
