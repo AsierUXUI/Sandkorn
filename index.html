@@ -2409,8 +2409,8 @@ function openDossier(id) {
   checkSettleMilestones(c.id);
   renderJourneyTab(c.id);
 
-  // Reset tabs to first
-  switchDossierTabTo('boycott', 0);
+  // Already committed → open on Journey tab; otherwise start at What We Found
+  switchDossierTabTo('boycott', isCommitted(c.id) ? 3 : 0);
   showScreen('screen-dossier-boycott');
 }
 
