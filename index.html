@@ -1702,20 +1702,45 @@ function drawGrainDiamond(ctx, x, y, r, alpha, isMine) {
 
 // ── Pile layout builder ──────────────────────────────────────────────────────
 function buildPileLayout(count, W, H, grainR) {
+  if (count <= 1) {
+    return [{ x: W * 0.5, y: H - grainR * 2.2, r: grainR, isMine: true, alpha: 0.92, vx:0, vy:0 }];
+  }
+
   const rand = seededRand(42);
+  const diam  = grainR * 2;
+  const rowH  = grainR * 1.72;   // row-to-row vertical distance
+  const baseY = H - grainR * 1.6; // y of bottom row
+
+  // How many grains wide is the base row? (~78% of canvas)
+  const baseN = Math.max(3, Math.floor(W * 0.78 / diam));
+
+  // Build all row positions top-to-bottom so we can slice to count
+  const positions = [];
+  for (let row = 0; ; row++) {
+    const n = baseN - row * 2;
+    if (n <= 0) break;
+    const x0 = (W - n * diam) / 2 + grainR; // center each row
+    const y  = baseY - row * rowH;
+    for (let col = 0; col < n; col++) {
+      const aRand = rand(); // consume one rand per grain for alpha
+      const jx = (rand() - 0.5) * grainR * 0.42;
+      const jy = (rand() - 0.5) * grainR * 0.30;
+      positions.push({ x: x0 + col * diam + jx, y: y + jy, aRand });
+    }
+  }
+
+  // Pin "my grain" to center of base row, swap it to index 0
+  const mineCol = Math.floor(baseN / 2);
+  const mineIdx = mineCol < positions.length ? mineCol : 0;
+  if (mineIdx > 0) [positions[0], positions[mineIdx]] = [positions[mineIdx], positions[0]];
+
+  // Build final grain array
   const gs = [];
-  const baseY = H - grainR * 1.8;
-  const pileW = W * 0.72;
-  const pileX = W * 0.14;
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < count && i < positions.length; i++) {
+    const p = positions[i];
     const isMine = i === 0;
-    const progress = count <= 1 ? 0 : i / count;
-    const layerH = Math.sqrt(progress) * H * 0.8;
-    const layerSpread = pileW * (1 - progress * 0.62);
-    const x = count === 1 ? W * 0.5 : (pileX + layerSpread * 0.1 + rand() * layerSpread * 0.8);
-    const y = count === 1 ? baseY  : (baseY - layerH * rand());
-    const alpha = isMine ? 0.92 : (0.55 + rand() * 0.35);
-    gs.push({ x, y, r: grainR, isMine, alpha, vx: 0, vy: 0 });
+    const alpha  = isMine ? 0.92 : (0.42 + p.aRand * 0.38);
+    gs.push({ x: p.x, y: p.y, r: grainR, isMine, alpha, vx:0, vy:0 });
   }
   return gs;
 }
