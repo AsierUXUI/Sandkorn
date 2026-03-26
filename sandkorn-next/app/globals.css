@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+/* shadcn semantic variables — aliased from Sandkorn design tokens */
+:root {
+  --background: #f3f4f1;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #1a7a6a;
+  --primary-foreground: #ffffff;
+  --secondary: #c8a464;
+  --secondary-foreground: #111111;
+  --muted: #e2e4de;
+  --muted-foreground: #9aa09a;
+  --accent: #edf7f5;
+  --accent-foreground: #1a7a6a;
+  --destructive: #c05010;
+  --destructive-foreground: #ffffff;
+  --border: #e2e4de;
+  --input: #e2e4de;
+  --ring: #b8ddd8;
+  --radius: 0.75rem;
+}
+
 @theme inline {
   /* Colors */
   --color-bg: #f3f4f1;
