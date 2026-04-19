@@ -6,6 +6,10 @@ import { companies } from '@/lib/data/companies'
 import { getFindingsForCompany } from '@/lib/data/findings'
 import type { BubbleKey } from '@/types/company'
 
+export function generateStaticParams() {
+  return companies.map((c) => ({ id: c.id }))
+}
+
 export default async function FindingsPage({
   params,
 }: {
