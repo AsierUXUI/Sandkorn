@@ -1,12 +1,14 @@
 import { notFound } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
+import { PathHeader } from '@/components/journey/PathHeader'
 import { JourneyPath } from '@/components/journey/JourneyPath'
 import { companies } from '@/lib/data/companies'
-import { JOURNEY_PHASES } from '@/lib/data/journey'
+import { getJourneyConfig } from '@/lib/data/journeys'
+import { getActiveBoycott } from '@/lib/data/boycotts'
 
-// Phase 0 demo: grain completed, cut is active
-const DEMO_COMPLETED = ['grain'] as const
-const DEMO_ACTIVE = 'cut' as const
+// Phase 0 demo: first node completed, second node active
+const DEMO_COMPLETED = ['wolt-share']
+const DEMO_ACTIVE = 'wolt-delete'
 
 export default async function JourneyPage({
   params,
@@ -17,15 +19,19 @@ export default async function JourneyPage({
   const company = companies.find((c) => c.id === id)
   if (!company) notFound()
 
+  const config = getJourneyConfig(id)
+  if (!config) notFound()
+
+  const boycott = getActiveBoycott()
   const doneCount = DEMO_COMPLETED.length
-  const totalCount = JOURNEY_PHASES.length
+  const totalCount = config.nodes.length
 
   return (
     <div className="min-h-screen flex flex-col max-w-[430px] md:max-w-[860px] mx-auto pb-16">
       <TopBar
         showBack
         backHref={`/companies/${id}`}
-        title={company.name}
+        title="Boycott plan"
         right={
           <span className="font-mono text-[9px] bg-teal text-white rounded-full px-2.5 py-1 tracking-[.5px]">
             {doneCount}/{totalCount}
@@ -33,10 +39,18 @@ export default async function JourneyPage({
         }
       />
 
+      {boycott && (
+        <PathHeader
+          company={company}
+          boycott={boycott}
+          totalGrains={config.totalGrains}
+        />
+      )}
+
       <JourneyPath
-        companyId={id}
-        activeStep={DEMO_ACTIVE}
-        completedSteps={[...DEMO_COMPLETED]}
+        config={config}
+        activeNodeId={DEMO_ACTIVE}
+        completedNodeIds={DEMO_COMPLETED}
       />
     </div>
   )
