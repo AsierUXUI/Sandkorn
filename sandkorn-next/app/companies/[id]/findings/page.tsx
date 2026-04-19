@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
 import { Bubble } from '@/components/ui/Bubble'
+import { EvidenceMap } from '@/components/findings/EvidenceMap'
 import { companies } from '@/lib/data/companies'
+import { getFindingsForCompany } from '@/lib/data/findings'
 import type { BubbleKey } from '@/types/company'
 
 export default async function FindingsPage({
@@ -13,12 +15,25 @@ export default async function FindingsPage({
   const company = companies.find((c) => c.id === id)
   if (!company) notFound()
 
+  const findings = getFindingsForCompany(id)
   const companyActions = company.actions?.filter((a) => !a.isOwnerAction) ?? []
   const ownerActions = company.actions?.filter((a) => a.isOwnerAction) ?? []
 
   return (
     <div className="min-h-screen flex flex-col max-w-[430px] md:max-w-[860px] mx-auto pb-16">
       <TopBar showBack backHref={`/companies/${id}`} title={company.name} />
+
+      {/* Evidence map */}
+      {findings.length > 0 && (
+        <EvidenceMap
+          companyName={company.name}
+          companyLogo={company.logo}
+          companyLogoBg={company.logoBg}
+          companyLogoCl={company.logoCl}
+          companyLogoImg={company.logoImg}
+          findings={findings}
+        />
+      )}
 
       <div className="flex-1 px-5 pt-4">
         {/* Company actions */}
@@ -93,7 +108,7 @@ export default async function FindingsPage({
           </>
         )}
 
-        {companyActions.length === 0 && ownerActions.length === 0 && (
+        {companyActions.length === 0 && ownerActions.length === 0 && findings.length === 0 && (
           <div className="text-center py-16 text-dim">
             <p className="font-mono text-[11px]">Documentation coming soon</p>
           </div>
