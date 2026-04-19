@@ -2,6 +2,10 @@ import { notFound } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
 import { companies } from '@/lib/data/companies'
 
+export function generateStaticParams() {
+  return companies.map((c) => ({ id: c.id }))
+}
+
 export default async function OwnershipPage({
   params,
 }: {

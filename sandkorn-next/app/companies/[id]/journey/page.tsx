@@ -6,6 +6,10 @@ import { companies } from '@/lib/data/companies'
 import { getJourneyConfig } from '@/lib/data/journeys'
 import { getActiveBoycott } from '@/lib/data/boycotts'
 
+export function generateStaticParams() {
+  return companies.map((c) => ({ id: c.id }))
+}
+
 // Phase 0 demo: first node completed, second node active
 const DEMO_COMPLETED = ['wolt-share']
 const DEMO_ACTIVE = 'wolt-delete'

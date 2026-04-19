@@ -9,6 +9,10 @@ import { companies } from '@/lib/data/companies'
 import { getAlternativesFor } from '@/lib/data/alternatives'
 import { JOURNEY_PHASES } from '@/lib/data/journey'
 
+export function generateStaticParams() {
+  return companies.map((c) => ({ id: c.id }))
+}
+
 export default async function CompanyDossierPage({
   params,
 }: {
