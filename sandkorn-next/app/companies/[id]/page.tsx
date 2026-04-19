@@ -8,6 +8,7 @@ import { AlternativeCard } from '@/components/alternatives/AlternativeCard'
 import { companies } from '@/lib/data/companies'
 import { getAlternativesFor } from '@/lib/data/alternatives'
 import { JOURNEY_PHASES } from '@/lib/data/journey'
+import { CompanyLogoImage } from '@/components/company/CompanyLogoImage'
 
 export function generateStaticParams() {
   return companies.map((c) => ({ id: c.id }))
@@ -38,23 +39,13 @@ export default async function CompanyDossierPage({
       {/* Hero */}
       <div className="px-5 pt-4 pb-5 border-b border-border">
         <div className="flex items-center gap-3 mb-3">
-          <div
-            className="w-12 h-12 rounded-[12px] flex items-center justify-center font-bold text-sm flex-shrink-0 overflow-hidden"
-            style={{ background: company.logoBg, color: company.logoCl }}
-          >
-            <Image
-              src={company.logoImg}
-              alt={company.name}
-              width={48}
-              height={48}
-              className="w-full h-full object-contain p-1"
-              onError={(e) => {
-                const el = e.currentTarget as HTMLImageElement
-                el.style.display = 'none'
-                el.parentElement!.textContent = company.logo
-              }}
-            />
-          </div>
+          <CompanyLogoImage
+            src={company.logoImg}
+            alt={company.name}
+            fallback={company.logo}
+            bg={company.logoBg}
+            cl={company.logoCl}
+          />
           <div>
             <h1 className="font-syne font-bold text-xl leading-tight">{company.name}</h1>
             <p className="text-dim text-[13px]">{company.sub}</p>
