@@ -146,7 +146,7 @@ export default function HomePage() {
           <div className="flex min-h-[140px]">
             {/* Canvas side */}
             <div className="flex-1 relative overflow-hidden border-r border-border bg-bg">
-              <GrainPile count={data.grains} />
+              <GrainPile count={data.grains} scope={scope} />
             </div>
             {/* Numbers side */}
             <div className="flex-1 flex flex-col justify-center px-3 py-3 gap-1.5">
