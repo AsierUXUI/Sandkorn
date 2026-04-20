@@ -1,5 +1,4 @@
 import { Fragment } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { TopBar } from '@/components/layout/TopBar'
@@ -8,7 +7,9 @@ import { AlternativeCard } from '@/components/alternatives/AlternativeCard'
 import { companies } from '@/lib/data/companies'
 import { getAlternativesFor } from '@/lib/data/alternatives'
 import { JOURNEY_PHASES } from '@/lib/data/journey'
+import { getActiveBoycott } from '@/lib/data/boycotts'
 import { CompanyLogoImage } from '@/components/company/CompanyLogoImage'
+import { BriefingTrigger } from '@/components/briefing/BriefingTrigger'
 
 export function generateStaticParams() {
   return companies.map((c) => ({ id: c.id }))
@@ -26,6 +27,9 @@ export default async function CompanyDossierPage({
   const alts = getAlternativesFor(company.id)
   const companyActionsCount =
     company.actions?.filter((a) => !a.isOwnerAction).length ?? 0
+
+  const activeBoycott = getActiveBoycott()
+  const isActive = activeBoycott?.companyId === id
 
   // Phase 0 demo journey state
   const doneCount = 1 // grain auto-completed
@@ -74,8 +78,8 @@ export default async function CompanyDossierPage({
       {/* Hub content */}
       <div className="flex-1 px-5 pt-4">
 
-        {/* ── Journey CTA card (primary) ── */}
-        <Link href={`/companies/${id}/journey`} className="no-underline block mb-3">
+        {/* ── Journey CTA card (primary) — active boycott only ── */}
+        {isActive && <Link href={`/companies/${id}/journey`} className="no-underline block mb-3">
           <div className="bg-teal rounded-[18px] p-4 relative overflow-hidden">
             {/* Background grain watermark */}
             <div
@@ -122,7 +126,7 @@ export default async function CompanyDossierPage({
               </span>
             </div>
           </div>
-        </Link>
+        </Link>}
 
         {/* ── Secondary nav rows ── */}
         <div className="bg-white border border-border rounded-2xl overflow-hidden mb-4">
@@ -146,7 +150,7 @@ export default async function CompanyDossierPage({
 
           <Link
             href={`/companies/${id}/ownership`}
-            className="flex items-center justify-between px-4 py-3.5 no-underline text-text hover:bg-bg transition-colors"
+            className={`flex items-center justify-between px-4 py-3.5 no-underline text-text hover:bg-bg transition-colors ${isActive ? 'border-b border-border' : ''}`}
           >
             <div className="flex items-center gap-3">
               <span className="text-[18px]">🏢</span>
@@ -157,6 +161,21 @@ export default async function CompanyDossierPage({
             </div>
             <span className="text-dim text-[20px] leading-none">›</span>
           </Link>
+
+          {isActive && (
+            <BriefingTrigger boycottId={activeBoycott!.id} journeyHref={`/companies/${id}/journey`}>
+              <div className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-bg transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="text-[18px]">📖</span>
+                  <div>
+                    <p className="text-[13px] font-semibold leading-tight">Boycott briefing</p>
+                    <p className="text-[11px] text-dim mt-px">Why we&apos;re boycotting Wolt</p>
+                  </div>
+                </div>
+                <span className="text-dim text-[20px] leading-none">›</span>
+              </div>
+            </BriefingTrigger>
+          )}
         </div>
 
         {/* ── Alternatives carousel ── */}
@@ -177,14 +196,22 @@ export default async function CompanyDossierPage({
 
       {/* Sticky CTA bar */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] md:max-w-[860px] bg-white/96 backdrop-blur-md border-t border-border px-5 py-3 flex gap-2 z-[200] pb-[calc(12px+env(safe-area-inset-bottom,0px))]">
-        <Link
-          href={`/companies/${id}/journey`}
-          className="flex-1 flex items-center justify-center bg-teal text-white rounded-xl py-3 font-semibold text-[14px] no-underline"
-        >
-          {company.actionType === 'gdpr'
-            ? 'Send GDPR deletion request 🌾'
-            : 'Start Boycott 🌾'}
-        </Link>
+        {isActive ? (
+          <BriefingTrigger boycottId={activeBoycott!.id} journeyHref={`/companies/${id}/journey`}>
+            <div className="flex-1 flex items-center justify-center bg-teal text-white rounded-xl py-3 font-semibold text-[14px] cursor-pointer">
+              {company.actionType === 'gdpr'
+                ? 'Send GDPR deletion request 🌾'
+                : 'Start Boycott 🌾'}
+            </div>
+          </BriefingTrigger>
+        ) : (
+          <Link
+            href={`/companies/${id}/findings`}
+            className="flex-1 flex items-center justify-center bg-teal text-white rounded-xl py-3 font-semibold text-[14px] no-underline"
+          >
+            See what we found
+          </Link>
+        )}
         <button className="w-[46px] h-[46px] rounded-xl border border-border bg-white cursor-pointer flex items-center justify-center flex-shrink-0">
           <svg
             viewBox="0 0 24 24"

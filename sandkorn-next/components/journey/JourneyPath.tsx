@@ -39,7 +39,6 @@ export function JourneyPath({ config, activeNodeId, completedNodeIds }: JourneyP
             <PathNode
               node={node}
               state={getState(node.id)}
-              side={idx % 2 === 0 ? 'right' : 'left'}
               companyId={config.companyId}
               showConnector={idx < config.nodes.length - 1}
               onTap={setSelectedNode}

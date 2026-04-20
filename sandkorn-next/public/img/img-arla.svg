@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="32" fill="white"/>
+  <!-- Green oval -->
+  <ellipse cx="100" cy="118" rx="86" ry="58" fill="#2E7D32"/>
+  <ellipse cx="100" cy="118" rx="78" ry="50" fill="#388E3C"/>
+  <!-- Yellow flower petals -->
+  <ellipse cx="100" cy="56" rx="10" ry="18" fill="#FDD835" transform="rotate(-30 100 56)"/>
+  <ellipse cx="100" cy="56" rx="10" ry="18" fill="#FDD835" transform="rotate(30 100 56)"/>
+  <ellipse cx="100" cy="56" rx="10" ry="18" fill="#FBC02D"/>
+  <ellipse cx="86" cy="62" rx="10" ry="18" fill="#FDD835" transform="rotate(-60 86 62)"/>
+  <ellipse cx="114" cy="62" rx="10" ry="18" fill="#FDD835" transform="rotate(60 114 62)"/>
+  <circle cx="100" cy="60" r="10" fill="#F9A825"/>
+  <!-- Arla text -->
+  <text x="100" y="132" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="1">Arla</text>
+</svg>

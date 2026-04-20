@@ -26,11 +26,11 @@ function buildGrains(count: number, W: number, H: number) {
   for (let i = 0; i < count; i++) {
     const progress = i / count
     const layerH = Math.sqrt(progress) * H * 0.82
-    const layerSpread = pileW * (1 - progress * 0.6)
+    const layerSpread = pileW * (1 - progress * 0.45)
     const x = pileX + layerSpread * 0.1 + rand() * layerSpread * 0.8
     const y = baseY - layerH * rand()
-    const r = 2 + rand() * 2.2
-    grains.push({ x, y, r, alpha: 0.18 + rand() * 0.28 })
+    const r = 2.5 + rand() * 2.8
+    grains.push({ x, y, r, alpha: 0.45 + rand() * 0.40 })
   }
   return grains
 }
@@ -56,6 +56,13 @@ export default function GrainPile({ count, width = 200, height = 140 }: GrainPil
     const grains = buildGrains(count, W, H)
 
     ctx.clearRect(0, 0, W, H)
+    // Shadow pass for depth
+    for (const g of grains) {
+      ctx.beginPath()
+      ctx.arc(g.x + 0.8, g.y + 0.8, g.r * 1.1, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(120,90,30,${g.alpha * 0.25})`
+      ctx.fill()
+    }
     for (const g of grains) {
       ctx.beginPath()
       ctx.arc(g.x, g.y, g.r, 0, Math.PI * 2)
