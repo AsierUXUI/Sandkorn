@@ -141,8 +141,42 @@ export default function GrainPile({ count, scope = 'dk', goal }: GrainPileProps)
       rafRef.current = requestAnimationFrame(bob)
     }
 
-    // You scope: single grain spring drop
+    // You scope: scatter from prev pile (if coming from another scope) or spring drop
     if (scope === 'you') {
+      // Coming down from city/dk: scatter all grains, zoom in mine
+      if (prevScope && prevScope !== 'you') {
+        const prevR = GRAIN_R[prevScope]
+        const prevLayout = buildLayout(prevCount, W, H, prevR)
+        const cx = W / 2, cy = H * 0.6
+        const ZOOM_FRAMES = 32
+        let frame = 0
+        let scattered = prevLayout.filter(g => !g.isMine).map(g => {
+          const dx = g.x - cx, dy = g.y - cy
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1
+          const spd = 2.5 + Math.random() * 4
+          return { ...g, vx: (dx / dist) * spd + (Math.random() - 0.5) * 1.5, vy: (dy / dist) * spd - Math.random() * 1.5 }
+        })
+        const myGrain = { ...prevLayout[0], r: prevR }
+        const targetR = GRAIN_R['you']
+        function scatterStep() {
+          frame++
+          const t = Math.min(frame / ZOOM_FRAMES, 1)
+          const e = 1 - Math.pow(1 - t, 3)
+          const currentR = myGrain.r + (targetR - myGrain.r) * e
+          scattered = scattered.map(g => ({ ...g, x: g.x + g.vx, y: g.y + g.vy, vy: g.vy + 0.12, alpha: Math.max(0, g.alpha - 0.038) }))
+          ctx!.clearRect(0, 0, W, H)
+          scattered.forEach(g => { if (g.alpha > 0) drawDiamond(ctx!, g.x, g.y, g.r, g.alpha, false) })
+          drawDiamond(ctx!, myGrain.x, myGrain.y, currentR, myGrain.alpha, true)
+          if (t < 1 || scattered.some(g => g.alpha > 0)) {
+            rafRef.current = requestAnimationFrame(scatterStep)
+          } else {
+            startBob([{ ...layout[0], r: targetR }])
+          }
+        }
+        rafRef.current = requestAnimationFrame(scatterStep)
+        return
+      }
+      // First mount or already 'you': single grain spring drop
       const grain = layout[0]
       let y = -20, vy = 0
       const floorY = grain.y
@@ -152,10 +186,7 @@ export default function GrainPile({ count, scope = 'dk', goal }: GrainPileProps)
         if (y >= floorY) {
           y = floorY
           vy *= -0.42
-          if (Math.abs(vy) < 0.4) {
-            startBob([{ ...grain, y: floorY }])
-            return
-          }
+          if (Math.abs(vy) < 0.4) { startBob([{ ...grain, y: floorY }]); return }
         }
         ctx!.clearRect(0, 0, W, H)
         drawDiamond(ctx!, grain.x, y, grain.r, grain.alpha, true)
@@ -227,43 +258,6 @@ export default function GrainPile({ count, scope = 'dk', goal }: GrainPileProps)
       }
 
       rafRef.current = requestAnimationFrame(zoomStep)
-      return
-    }
-
-    // Going down to 'you' from another scope: scatter + zoom in mine
-    if (prevScope && prevScope !== 'you' && scope === 'you') {
-      const prevR = GRAIN_R[prevScope]
-      const prevLayout = buildLayout(prevCount, W, H, prevR)
-      const cx = W / 2, cy = H * 0.6
-      const ZOOM_FRAMES = 32
-      let frame = 0
-      let scattered = prevLayout.filter(g => !g.isMine).map(g => {
-        const dx = g.x - cx, dy = g.y - cy
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1
-        const spd = 2.5 + Math.random() * 4
-        return { ...g, vx: (dx / dist) * spd + (Math.random() - 0.5) * 1.5, vy: (dy / dist) * spd - Math.random() * 1.5 }
-      })
-      const myGrain = { ...prevLayout[0], r: prevR }
-      const targetR = GRAIN_R['you']
-
-      function step() {
-        frame++
-        const t = Math.min(frame / ZOOM_FRAMES, 1)
-        const e = 1 - Math.pow(1 - t, 3)
-        const currentR = myGrain.r + (targetR - myGrain.r) * e
-        scattered = scattered.map(g => ({ ...g, x: g.x + g.vx, y: g.y + g.vy, vy: g.vy + 0.12, alpha: Math.max(0, g.alpha - 0.038) }))
-        ctx!.clearRect(0, 0, W, H)
-        scattered.forEach(g => { if (g.alpha > 0) drawDiamond(ctx!, g.x, g.y, g.r, g.alpha, false) })
-        drawDiamond(ctx!, myGrain.x, myGrain.y, currentR, myGrain.alpha, true)
-        const anyVisible = scattered.some(g => g.alpha > 0)
-        if (t < 1 || anyVisible) {
-          rafRef.current = requestAnimationFrame(step)
-        } else {
-          const finalGrain = { ...layout[0], r: targetR }
-          startBob([finalGrain])
-        }
-      }
-      rafRef.current = requestAnimationFrame(step)
       return
     }
 
