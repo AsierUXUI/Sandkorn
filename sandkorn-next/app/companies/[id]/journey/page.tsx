@@ -23,10 +23,11 @@ export default async function JourneyPage({
   const company = companies.find((c) => c.id === id)
   if (!company) notFound()
 
+  const boycott = getActiveBoycott()
+  if (!boycott || boycott.companyId !== id) notFound()
+
   const config = getJourneyConfig(id)
   if (!config) notFound()
-
-  const boycott = getActiveBoycott()
   const doneCount = DEMO_COMPLETED.length
   const totalCount = config.nodes.length
 
@@ -43,13 +44,11 @@ export default async function JourneyPage({
         }
       />
 
-      {boycott && (
-        <PathHeader
-          company={company}
-          boycott={boycott}
-          totalGrains={config.totalGrains}
-        />
-      )}
+      <PathHeader
+        company={company}
+        boycott={boycott}
+        totalGrains={config.totalGrains}
+      />
 
       <JourneyPath
         config={config}

@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import type { Company } from '@/types/company'
 import { Bubble } from '@/components/ui/Bubble'
+import { CompanyLogoImage } from '@/components/company/CompanyLogoImage'
 
 interface CompanyRowProps {
   company: Company
@@ -13,24 +13,13 @@ export function CompanyRow({ company }: CompanyRowProps) {
       href={`/companies/${company.id}`}
       className="flex items-center gap-3 px-4 py-3.5 border-b border-border last:border-b-0 no-underline text-text transition-colors hover:bg-bg/60"
     >
-      <div
-        className="w-10 h-10 rounded-[10px] flex items-center justify-center font-bold text-sm flex-shrink-0 overflow-hidden"
-        style={{ background: company.logoBg, color: company.logoCl }}
-      >
-        <Image
-          src={company.logoImg}
-          alt={company.name}
-          width={40}
-          height={40}
-          className="w-full h-full object-contain p-1"
-          onError={(e) => {
-            // fallback to letter logo
-            const el = e.currentTarget as HTMLImageElement
-            el.style.display = 'none'
-            el.parentElement!.textContent = company.logo
-          }}
-        />
-      </div>
+      <CompanyLogoImage
+        src={company.logoImg}
+        alt={company.name}
+        fallback={company.logo}
+        bg={company.logoBg}
+        cl={company.logoCl}
+      />
 
       <div className="flex-1 min-w-0">
         <div className="font-syne font-bold text-[15px] leading-tight">{company.name}</div>
