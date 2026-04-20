@@ -2,10 +2,10 @@ import type { Boycott } from '@/types/boycott'
 
 export const boycotts: Boycott[] = [
   {
-    id: 'boycott-wolt-mar-2026',
+    id: 'boycott-wolt-apr-2026',
     companyId: 'wolt',
-    startDate: '2026-03-01',
-    endDate: '2026-03-31',
+    startDate: '2026-04-01',
+    endDate: '2026-04-30',
     goal: 2000,
     grains: 312,
     cityGrains: 187,
