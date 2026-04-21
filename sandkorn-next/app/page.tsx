@@ -12,7 +12,7 @@ import { companies } from '@/lib/data/companies'
 import { getActiveBoycott, nextBoycottCandidates } from '@/lib/data/boycotts'
 import { getBannerForBoycottPage } from '@/lib/data/banners'
 import { getAlternativesFor } from '@/lib/data/alternatives'
-import { JOURNEY_PHASES } from '@/lib/data/journeys'
+import { JOURNEY_PHASES } from '@/lib/data/journey'
 
 const GrainPile = dynamic(() => import('@/components/grain/GrainPile'), { ssr: false })
 
