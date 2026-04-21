@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -12,6 +12,7 @@ import { companies } from '@/lib/data/companies'
 import { getActiveBoycott, nextBoycottCandidates } from '@/lib/data/boycotts'
 import { getBannerForBoycottPage } from '@/lib/data/banners'
 import { getAlternativesFor } from '@/lib/data/alternatives'
+import { JOURNEY_PHASES } from '@/lib/data/journeys'
 
 const GrainPile = dynamic(() => import('@/components/grain/GrainPile'), { ssr: false })
 
@@ -22,6 +23,11 @@ const activeCompany = companies.find((c) => c.id === activeBoycott?.companyId)
 const candidateCompanies = companies.filter((c) => nextBoycottCandidates.includes(c.id))
 const activeBanner = getBannerForBoycottPage()
 const woltAlts = activeBoycott ? getAlternativesFor(activeBoycott.companyId).slice(0, 3) : []
+
+// Phase 0 demo journey state
+const DONE_COUNT = 1
+const TOTAL_COUNT = JOURNEY_PHASES.length
+const NEXT_STEP = JOURNEY_PHASES[DONE_COUNT]
 
 // Static vote distribution (real voting comes with Supabase in Phase 4)
 const CANDIDATE_VOTES = [42, 35, 23]
@@ -169,13 +175,45 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ── Journey button ── */}
+        {/* ── Journey card ── */}
         <div className="px-5 mb-4">
           <BriefingTrigger boycottId={activeBoycott.id} companyId={activeCompany.id} source="landing">
-            <div className="w-full flex items-center justify-center bg-teal text-white rounded-2xl py-4 font-syne font-extrabold text-[15px] tracking-[.3px] cursor-pointer">
-              {activeCompany.actionType === 'gdpr'
-                ? 'Send GDPR deletion request 🌾'
-                : 'Start Boycott 🌾'}
+            <div className="bg-teal rounded-[18px] p-4 relative overflow-hidden cursor-pointer">
+              <div
+                className="absolute -right-3 -top-3 text-[72px] leading-none pointer-events-none select-none"
+                style={{ opacity: 0.12 }}
+                aria-hidden
+              >
+                🌾
+              </div>
+              <p className="font-mono text-[9px] text-white/70 tracking-[1px] mb-2">
+                YOUR BOYCOTT JOURNEY
+              </p>
+              <div className="flex items-center gap-1.5 mb-3">
+                {JOURNEY_PHASES.map((phase, i) => (
+                  <Fragment key={phase.key}>
+                    {i > 0 && <div className="flex-1 h-px bg-white/25 max-w-6 min-w-[8px]" />}
+                    <div
+                      className={`rounded-full flex-shrink-0 ${
+                        i < DONE_COUNT
+                          ? 'w-3 h-3 bg-white/90'
+                          : i === DONE_COUNT
+                          ? 'w-4 h-4 bg-white border-2 border-white/50 shadow-[0_0_0_3px_rgba(255,255,255,.18)]'
+                          : 'w-2.5 h-2.5 bg-white/30'
+                      }`}
+                    />
+                  </Fragment>
+                ))}
+              </div>
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="font-syne font-extrabold text-[17px] text-white leading-tight mb-0.5">
+                    Step {DONE_COUNT + 1} of {TOTAL_COUNT}
+                  </p>
+                  <p className="text-[12px] text-white/80">Next: {NEXT_STEP.title}</p>
+                </div>
+                <span className="text-[13px] text-white font-semibold flex-shrink-0">Continue →</span>
+              </div>
             </div>
           </BriefingTrigger>
         </div>
