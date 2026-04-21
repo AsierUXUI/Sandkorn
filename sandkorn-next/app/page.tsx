@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Bubble } from '@/components/ui/Bubble'
 import { CompanyRow } from '@/components/company/CompanyRow'
 import { CandidateCard } from '@/components/company/CandidateCard'
+import { BriefingTrigger } from '@/components/briefing/BriefingTrigger'
 import { companies } from '@/lib/data/companies'
 import { getActiveBoycott, nextBoycottCandidates } from '@/lib/data/boycotts'
 
@@ -164,20 +165,19 @@ export default function HomePage() {
           </div>
 
           {/* Join CTA strip */}
-          <Link
-            href={`/companies/${activeCompany.id}`}
-            className="px-4 py-3.5 bg-[#1a1a1a] flex items-center justify-between cursor-pointer border-t-2 border-teal no-underline hover:bg-[#2a2a2a] transition-colors"
-          >
-            <div>
-              <div className="text-[15px] font-bold text-white tracking-tight">Join the boycott →</div>
-              <div className="font-mono text-[10px] text-white/45 mt-0.5">
-                Boycott {activeCompany.name} this month · see why it matters
+          <BriefingTrigger boycottId={activeBoycott.id} companyId={activeCompany.id} source="landing">
+            <div className="px-4 py-3.5 bg-[#1a1a1a] flex items-center justify-between cursor-pointer border-t-2 border-teal hover:bg-[#2a2a2a] transition-colors">
+              <div>
+                <div className="text-[15px] font-bold text-white tracking-tight">Join the boycott →</div>
+                <div className="font-mono text-[10px] text-white/45 mt-0.5">
+                  Boycott {activeCompany.name} this month · see why it matters
+                </div>
               </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="2" strokeLinecap="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
             </div>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="2" strokeLinecap="round">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </Link>
+          </BriefingTrigger>
         </div>
 
         {/* ── Next boycott candidates ── */}

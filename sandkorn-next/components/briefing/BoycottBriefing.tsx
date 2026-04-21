@@ -1,40 +1,40 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import type { BoycottBriefing as BoycottBriefingType } from '@/lib/data/briefings'
 
 interface BoycottBriefingProps {
   briefing: BoycottBriefingType
-  journeyHref: string
-  onClose: () => void
+  onComplete: () => void
+  onDismiss: () => void
+  skipBehavior: 'last-slide' | 'dismiss'
 }
 
-export function BoycottBriefing({ briefing, journeyHref, onClose }: BoycottBriefingProps) {
+export function BoycottBriefing({ briefing, onComplete, onDismiss, skipBehavior }: BoycottBriefingProps) {
   const [index, setIndex] = useState(0)
-  const router = useRouter()
   const beats = briefing.beats
   const beat = beats[index]
   const isLast = index === beats.length - 1
-  const progress = (index + 1) / beats.length
 
   const next = useCallback(() => {
     if (isLast) {
-      onClose()
-      router.push(journeyHref)
+      onComplete()
     } else {
       setIndex((i) => i + 1)
     }
-  }, [isLast, onClose, router, journeyHref])
+  }, [isLast, onComplete])
 
   const prev = useCallback(() => {
     if (index > 0) setIndex((i) => i - 1)
   }, [index])
 
   const handleSkip = useCallback(() => {
-    onClose()
-    router.push(journeyHref)
-  }, [onClose, router, journeyHref])
+    if (skipBehavior === 'last-slide') {
+      setIndex(beats.length - 1)
+    } else {
+      onDismiss()
+    }
+  }, [skipBehavior, beats.length, onDismiss])
 
   const handleTap = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -57,7 +57,7 @@ export function BoycottBriefing({ briefing, journeyHref, onClose }: BoycottBrief
           <div key={i} className="flex-1 h-0.5 rounded-full bg-white/20 overflow-hidden">
             <div
               className="h-full bg-white rounded-full transition-all duration-300"
-              style={{ width: i < index ? '100%' : i === index ? '100%' : '0%' }}
+              style={{ width: i <= index ? '100%' : '0%' }}
             />
           </div>
         ))}
@@ -66,7 +66,7 @@ export function BoycottBriefing({ briefing, journeyHref, onClose }: BoycottBrief
       {/* Top controls */}
       <div className="flex items-center justify-between px-4 py-2 flex-shrink-0">
         <button
-          onClick={index > 0 ? prev : onClose}
+          onClick={index > 0 ? prev : onDismiss}
           className="w-8 h-8 flex items-center justify-center rounded-full text-white/60 hover:text-white transition-colors"
           aria-label="Back"
         >
@@ -115,10 +115,10 @@ export function BoycottBriefing({ briefing, journeyHref, onClose }: BoycottBrief
       <div className="px-5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] flex-shrink-0">
         {isLast ? (
           <button
-            onClick={next}
+            onClick={onComplete}
             className="w-full bg-sand text-white rounded-2xl py-4 font-syne font-extrabold text-[16px] tracking-[.3px]"
           >
-            Join the boycott 🌾
+            Check my first step →
           </button>
         ) : (
           <button
