@@ -28,6 +28,18 @@ export const alternatives: Alternative[] = [
     replacesIds: ['wolt'],
     free: true,
   },
+  {
+    id: 'aarstiderne',
+    name: 'Aarstiderne',
+    sub: 'Meal kit delivery',
+    description: 'Danish organic meal kit company — full-time employed staff, organic ingredients, and no gig economy. Cuts out the delivery platform entirely.',
+    url: 'https://www.aarstiderne.com',
+    logo: 'Åå',
+    logoBg: '#f0fdf0',
+    logoCl: '#2d7a2d',
+    replacesIds: ['wolt'],
+    danish: true,
+  },
 
   // ── Meta alternatives ─────────────────────────────────────────────────────
 

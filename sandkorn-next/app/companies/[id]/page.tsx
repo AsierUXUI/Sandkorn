@@ -37,7 +37,7 @@ export default async function CompanyDossierPage({
   const nextStep = JOURNEY_PHASES[1] // 'cut' — Delete the app
 
   return (
-    <div className="min-h-screen flex flex-col max-w-[430px] md:max-w-[860px] mx-auto pb-24">
+    <div className="min-h-screen flex flex-col max-w-[430px] md:max-w-[860px] mx-auto pb-20">
       <TopBar showBack backHref="/companies" />
 
       {/* Hero */}
@@ -194,41 +194,6 @@ export default async function CompanyDossierPage({
 
       </div>
 
-      {/* Sticky CTA bar */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] md:max-w-[860px] bg-white/96 backdrop-blur-md border-t border-border px-5 py-3 flex gap-2 z-[200] pb-[calc(12px+env(safe-area-inset-bottom,0px))]">
-        {isActive ? (
-          <BriefingTrigger boycottId={activeBoycott!.id} companyId={id} source="dossier">
-            <div className="flex-1 flex items-center justify-center bg-teal text-white rounded-xl py-3 font-semibold text-[14px] cursor-pointer">
-              {company.actionType === 'gdpr'
-                ? 'Send GDPR deletion request 🌾'
-                : 'Start Boycott 🌾'}
-            </div>
-          </BriefingTrigger>
-        ) : (
-          <Link
-            href={`/companies/${id}/findings`}
-            className="flex-1 flex items-center justify-center bg-teal text-white rounded-xl py-3 font-semibold text-[14px] no-underline"
-          >
-            See what we found
-          </Link>
-        )}
-        <button className="w-[46px] h-[46px] rounded-xl border border-border bg-white cursor-pointer flex items-center justify-center flex-shrink-0">
-          <svg
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-            <polyline points="16 6 12 2 8 6" />
-            <line x1="12" y1="2" x2="12" y2="15" />
-          </svg>
-        </button>
-      </div>
     </div>
   )
 }

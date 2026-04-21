@@ -3,9 +3,13 @@
 import { useState } from 'react'
 import { TopBar } from '@/components/layout/TopBar'
 import { Pill } from '@/components/ui/Pill'
+import { BannerCard } from '@/components/ui/BannerCard'
 import { CompanyRow } from '@/components/company/CompanyRow'
 import { companies } from '@/lib/data/companies'
+import { getBannerForExplorePage } from '@/lib/data/banners'
 import type { Category } from '@/types/company'
+
+const exploreBanner = getBannerForExplorePage()
 
 const CATS: { value: Category | 'all'; label: string }[] = [
   { value: 'all',     label: 'All' },
@@ -26,6 +30,13 @@ export default function CompaniesPage() {
   return (
     <div className="min-h-screen flex flex-col pb-20 md:pb-10 max-w-[430px] md:max-w-[860px] mx-auto">
       <TopBar title="Boycott" />
+
+      {/* Banner (event > action) */}
+      {exploreBanner && (
+        <div className="px-5 pt-3 pb-1">
+          <BannerCard banner={exploreBanner} />
+        </div>
+      )}
 
       {/* Category filter pills */}
       <div className="flex gap-2 px-5 py-3 overflow-x-auto scrollbar-none -webkit-overflow-scrolling-touch">
