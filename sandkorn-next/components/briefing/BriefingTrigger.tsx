@@ -6,41 +6,66 @@ import { getBriefing } from '@/lib/data/briefings'
 
 interface BriefingTriggerProps {
   boycottId: string
-  journeyHref: string
+  companyId: string
+  source: 'landing' | 'dossier'
   children: React.ReactNode
 }
 
-const SEEN_KEY = (id: string) => `briefing-seen-${id}`
+// v2 key — previous key may be set from earlier builds
+const SEEN_KEY = (id: string) => `boycott-flow-seen-v2-${id}`
 
-export function BriefingTrigger({ boycottId, journeyHref, children }: BriefingTriggerProps) {
+function navigate(path: string) {
+  // next.config basePath is /Sandkorn — prepend it for window.location
+  const base = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+  window.location.href = base + path
+}
+
+export function BriefingTrigger({ boycottId, companyId, source, children }: BriefingTriggerProps) {
   const [showBriefing, setShowBriefing] = useState(false)
   const briefing = getBriefing(boycottId)
 
+  const hasSeen = () => !!localStorage.getItem(SEEN_KEY(boycottId))
+
+  const markSeen = useCallback(() => {
+    if (!localStorage.getItem(SEEN_KEY(boycottId))) {
+      localStorage.setItem(SEEN_KEY(boycottId), '1')
+    }
+  }, [boycottId])
+
   const handleClick = useCallback(() => {
     if (!briefing) return
-    const seen = typeof window !== 'undefined' && localStorage.getItem(SEEN_KEY(boycottId))
-    if (seen) {
-      window.location.href = journeyHref
+    if (source === 'landing' && hasSeen()) {
+      navigate(`/companies/${companyId}`)
     } else {
       setShowBriefing(true)
     }
-  }, [briefing, boycottId, journeyHref])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [briefing, boycottId, companyId, source])
 
-  const handleClose = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(SEEN_KEY(boycottId), '1')
-    }
+  const handleComplete = useCallback(() => {
+    markSeen()
     setShowBriefing(false)
-  }, [boycottId])
+    if (source === 'landing') {
+      navigate(`/companies/${companyId}/journey`)
+    }
+    // dossier: close overlay, stay on dossier
+  }, [source, markSeen, companyId])
+
+  const handleDismiss = useCallback(() => {
+    setShowBriefing(false)
+  }, [])
+
+  if (!briefing) return <>{children}</>
 
   return (
     <>
       <div onClick={handleClick}>{children}</div>
-      {showBriefing && briefing && (
+      {showBriefing && (
         <BoycottBriefing
           briefing={briefing}
-          journeyHref={journeyHref}
-          onClose={handleClose}
+          onComplete={handleComplete}
+          onDismiss={handleDismiss}
+          skipBehavior={source === 'landing' ? 'last-slide' : 'dismiss'}
         />
       )}
     </>

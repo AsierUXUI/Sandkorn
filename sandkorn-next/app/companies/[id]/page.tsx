@@ -163,7 +163,7 @@ export default async function CompanyDossierPage({
           </Link>
 
           {isActive && (
-            <BriefingTrigger boycottId={activeBoycott!.id} journeyHref={`/companies/${id}/journey`}>
+            <BriefingTrigger boycottId={activeBoycott!.id} companyId={id} source="dossier">
               <div className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-bg transition-colors">
                 <div className="flex items-center gap-3">
                   <span className="text-[18px]">📖</span>
@@ -197,7 +197,7 @@ export default async function CompanyDossierPage({
       {/* Sticky CTA bar */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] md:max-w-[860px] bg-white/96 backdrop-blur-md border-t border-border px-5 py-3 flex gap-2 z-[200] pb-[calc(12px+env(safe-area-inset-bottom,0px))]">
         {isActive ? (
-          <BriefingTrigger boycottId={activeBoycott!.id} journeyHref={`/companies/${id}/journey`}>
+          <BriefingTrigger boycottId={activeBoycott!.id} companyId={id} source="dossier">
             <div className="flex-1 flex items-center justify-center bg-teal text-white rounded-xl py-3 font-semibold text-[14px] cursor-pointer">
               {company.actionType === 'gdpr'
                 ? 'Send GDPR deletion request 🌾'
