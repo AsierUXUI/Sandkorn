@@ -38,7 +38,7 @@ export default async function CompanyDossierPage({
 
   return (
     <div className="min-h-screen flex flex-col max-w-[430px] md:max-w-[860px] mx-auto pb-20">
-      <TopBar showBack backHref="/companies" />
+      <TopBar showBack backHref="/" />
 
       {/* Hero */}
       <div className="px-5 pt-4 pb-5 border-b border-border">
